@@ -1,0 +1,130 @@
+import type { Module } from '../types';
+import { k, ch, ag, ml, rows, pie, MONTHS, WEEKS, spark } from '../gen';
+
+export const marketing: Module = {
+  slug: 'marcas', name: 'Marcas & Consumidor', short: 'Marcas & Consumidor', icon: 'Heart', color: '#D3122E', group: 'funcoes',
+  tagline: 'Milaneza, Nacional, Del Mondo, Amiga, Napolitana, Adriana, Zátkovy, Rosické e Ideál · media, social, inovação e nutrição',
+  owner: 'Mariana Couto — Diretora de Marketing e Inovação',
+  sources: ['Kantar Worldpanel', 'NielsenIQ', 'Meta e Google Ads', 'Social listening', 'milaneza.pt · nacional.pt', 'Apoio ao Consumidor', 'I&D · stage-gate'],
+  sections: [
+    {
+      id: 'saude', label: 'Saúde das marcas', icon: 'HeartPulse', blocks: [
+        { t: 'kpis', items: [
+          k('Notoriedade espontânea Milaneza', '71%', '+3 pp a/a', true, true, spark(41, 67, 1, 0.05)),
+          k('Penetração nos lares (Milaneza)', '58%', '+1,4 pp · Kantar', true, true),
+          k('Investimento em media (YTD, grupo)', '€6,2 M', '1,9% das vendas · PT €5,6 M', true, true),
+          k('ROI médio de media', '2,3', '+0,4 vs. 2025', true, true),
+        ] },
+        { t: 'table', title: 'Painel de saúde das marcas', sub: 'Kantar (lares), estudo de marca trimestral e sentimento Cortex', span: true, status: ['Tendência'],
+          columns: ['Marca', 'Mercado', 'Notoriedade', 'Consideração', 'Penetração', 'NPS', 'Sentimento', 'Tendência'],
+          rows: [
+            { Marca: 'Milaneza', Mercado: 'Portugal', Notoriedade: '71%', 'Consideração': '54%', 'Penetração': '58%', NPS: '+42', Sentimento: '+0,51', 'Tendência': 'Em subida' },
+            { Marca: 'Nacional', Mercado: 'Portugal', Notoriedade: '64%', 'Consideração': '47%', 'Penetração': '49%', NPS: '+38', Sentimento: '+0,47', 'Tendência': 'Em subida' },
+            { Marca: 'Del Mondo', Mercado: 'Portugal', Notoriedade: '18%', 'Consideração': '11%', 'Penetração': '6%', NPS: '+44', Sentimento: '+0,58', 'Tendência': 'Em subida' },
+            { Marca: 'Amiga', Mercado: 'Cabo Verde', Notoriedade: '83%', 'Consideração': '69%', 'Penetração': '72%', NPS: '+51', Sentimento: '+0,62', 'Tendência': 'Estável' },
+            { Marca: 'Adriana', Mercado: 'Chéquia', Notoriedade: '52%', 'Consideração': '37%', 'Penetração': '31%', NPS: '+36', Sentimento: '+0,41', 'Tendência': 'Em subida' },
+            { Marca: 'Zátkovy', Mercado: 'Chéquia', Notoriedade: '74%', 'Consideração': '51%', 'Penetração': '44%', NPS: '+40', Sentimento: '+0,45', 'Tendência': 'Estável' },
+            { Marca: 'Rosické', Mercado: 'Chéquia', Notoriedade: '49%', 'Consideração': '28%', 'Penetração': '26%', NPS: '+29', Sentimento: '+0,33', 'Tendência': 'Atenção' },
+            { Marca: 'Ideál', Mercado: 'Eslováquia', Notoriedade: '57%', 'Consideração': '34%', 'Penetração': '29%', NPS: '+31', Sentimento: '+0,38', 'Tendência': 'Estável' },
+          ] },
+        ch('mk1', 'Funil da Milaneza vs. principal concorrente (%)', 'Estudo de marca · 3.º trimestre', 'bar', ['Milaneza', 'Concorrente de marca'],
+          [{ m: 'Notoriedade', Milaneza: 71, 'Concorrente de marca': 63 }, { m: 'Consideração', Milaneza: 54, 'Concorrente de marca': 41 }, { m: 'Compra (12 meses)', Milaneza: 58, 'Concorrente de marca': 37 }, { m: 'Preferência', Milaneza: 29, 'Concorrente de marca': 18 }, { m: 'Fidelidade', Milaneza: 21, 'Concorrente de marca': 12 }],
+          'A Milaneza converte 82% da notoriedade em compra — referência na categoria.',
+          'A gama integral pode levar a preferência a 31% entre lares com crianças.',
+          'Campanha "massa feita de histórias felizes" focada em famílias jovens (25–39 anos).', { ratio: true }),
+        ch('mk2', 'Penetração nos lares por marca (%)', 'Kantar Worldpanel · Portugal', 'line', ['Milaneza', 'Nacional', 'Del Mondo'],
+          rows(MONTHS, { Milaneza: [56.6, 56.8, 57.0, 56.9, 57.1, 57.3, 57.4, 57.5, 57.6, 57.8, 58.0, 58.0], Nacional: [48.2, 48.3, 48.4, 48.4, 48.5, 48.6, 48.6, 48.7, 48.8, 48.9, 49.0, 49.0], 'Del Mondo': [4.1, 4.3, 4.4, 4.6, 4.8, 5.0, 5.2, 5.4, 5.6, 5.8, 5.9, 6.0] }),
+          'A Del Mondo quase duplicou a penetração num ano, captando lares premium sem canibalizar a Milaneza (sobreposição de 22%).',
+          'Previsão de 7,2% para a Del Mondo em abril.',
+          'Alargar a Del Mondo a 3 novos formatos (orecchiette, paccheri, linguine).', { ratio: true }),
+      ],
+    },
+    {
+      id: 'media', label: 'Media & ROI', icon: 'Megaphone', blocks: [
+        ch('mk3', 'ROI por canal de media (Marketing Mix Model)', 'Margem incremental por euro investido · 2026', 'hbar', ['ROI'],
+          [{ m: 'Folhetos e trade marketing', ROI: 2.9 }, { m: 'Digital (Meta, YouTube)', ROI: 2.7 }, { m: 'Influenciadores de culinária', ROI: 2.4 }, { m: 'Televisão', ROI: 1.9 }, { m: 'Exterior (outdoor)', ROI: 1.1 }, { m: 'Patrocínios', ROI: 0.8 }],
+          'O digital rende 42% mais do que a televisão por euro, mas satura acima de €180 mil/mês.',
+          'Mover 15% do orçamento de exterior para digital acrescenta €0,31 M de margem.',
+          'Rever o plano de media de 2027 com o otimizador de orçamento.', { ratio: true, model: 'Marketing Mix Model bayesiano · 3 anos semanais' }),
+        ch('mk4', 'Investimento em media por mês (€ mil)', 'Todas as marcas · Portugal', 'stack', ['Televisão', 'Digital', 'Influenciadores', 'Trade marketing', 'Exterior'],
+          rows(MONTHS.slice(2), { Televisão: [240, 180, 260, 210, 150, 120, 90, 110, 260, 290], Digital: [120, 130, 150, 160, 170, 160, 150, 140, 180, 190], Influenciadores: [40, 40, 50, 50, 60, 50, 40, 40, 60, 70], 'Trade marketing': [110, 120, 130, 120, 130, 140, 150, 140, 150, 160], Exterior: [30, 30, 40, 40, 30, 20, 20, 20, 40, 50] }),
+          'Outubro concentrou o maior investimento do ano com o regresso às aulas e a campanha Milaneza.',
+          'O pico de Natal planeado (nov–dez) é de €1,4 M.',
+          'Libertar €60 mil de exterior em dezembro para digital.'),
+        { t: 'scenario', title: 'Otimizador de orçamento de media (2027)', sub: 'Curvas de resposta do Marketing Mix Model',
+          inputs: [
+            { id: 'tot', label: 'Orçamento anual', min: 5, max: 10, step: 0.5, value: 7.5, unit: '€ M' },
+            { id: 'dig', label: 'Peso do digital', min: 20, max: 60, step: 5, value: 35, unit: '%' },
+          ],
+          outputs: [
+            { label: 'Margem incremental prevista', calc: v => v.tot * (2.0 + Math.min(v.dig, 45) / 100 * 1.6 - Math.max(0, v.dig - 45) / 100 * 2.2) * (1 - (v.tot - 5) * 0.035), fmt: n => `€${n.toLocaleString('pt-PT', { maximumFractionDigits: 1 })} M` },
+            { label: 'ROI médio', calc: v => (2.0 + Math.min(v.dig, 45) / 100 * 1.6 - Math.max(0, v.dig - 45) / 100 * 2.2) * (1 - (v.tot - 5) * 0.035), fmt: n => n.toLocaleString('pt-PT', { maximumFractionDigits: 2 }), good: n => n >= 2.3 },
+          ], note: 'Saturação do digital acima de 45% do orçamento; ROI de 2026: 2,3.' },
+      ],
+    },
+    {
+      id: 'social', label: 'Social & reputação', icon: 'MessagesSquare', blocks: [
+        { t: 'kpis', items: [
+          k('Menções nas redes (30 dias)', '18 400', '+26% m/m', true, true),
+          k('Sentimento líquido', '+0,46', '+0,05 m/m', true, true),
+          k('Receitas partilhadas com a marca', '2 310', 'TikTok e Instagram', true, true),
+          k('Temas em alerta', '1', 'massa partida', true, false),
+        ] },
+        ch('mk5', 'Sentimento por semana (−1 a +1)', 'Milaneza, Nacional e Adriana · Cortex AI_SENTIMENT', 'line', ['Milaneza', 'Nacional', 'Adriana'],
+          rows(WEEKS, { Milaneza: [0.52, 0.54, 0.53, 0.55, 0.54, 0.51, 0.47, 0.45, 0.48, 0.5, 0.52, 0.51], Nacional: [0.44, 0.45, 0.46, 0.45, 0.47, 0.48, 0.47, 0.46, 0.48, 0.47, 0.48, 0.47], Adriana: [0.38, 0.39, 0.4, 0.41, 0.4, 0.42, 0.41, 0.43, 0.42, 0.41, 0.42, 0.41] }),
+          'A quebra da Milaneza nas semanas 41–43 coincide com as publicações sobre massa partida; recuperou com as respostas personalizadas.',
+          'O sentimento da Milaneza volta a +0,54 em 3 semanas.',
+          'Publicar um vídeo dos bastidores da Maia II sobre a secagem lenta da massa.', { ratio: true }),
+        ch('mk6', 'Temas mais falados (30 dias)', 'Agrupados pelo Cortex', 'hbar', ['Menções'],
+          [{ m: 'Receitas rápidas com Milaneza', 'Menções': 4120 }, { m: 'Corn Flakes Sem Açúcar', 'Menções': 2870 }, { m: 'Napolitana T00 · pizza caseira', 'Menções': 2240 }, { m: 'Preço das massas', 'Menções': 1630 }, { m: 'Bolacha Alfa · nostalgia', 'Menções': 1410 }, { m: 'Massa partida', 'Menções': 690 }],
+          'A pizza caseira com Napolitana T00 é o tema que mais cresce (+64%), puxado por criadores de conteúdo.',
+          'O tema "preço das massas" deve aumentar se o trigo duro voltar a subir em fevereiro.',
+          'Lançar a Napolitana T00 de 1 kg para o consumidor final no Continente.'),
+      ],
+    },
+    {
+      id: 'inovacao', label: 'Inovação & Nutrição', icon: 'Lightbulb', blocks: [
+        { t: 'kpis', items: [
+          k('Vendas de produtos com < 3 anos', '11,4%', 'meta 2027: 15%', true, true),
+          k('Açúcar médio nos cereais Nacional', '−18%', 'desde 2023', false, true),
+          k('Gama com Nutri-Score A ou B', '78%', '+6 pp a/a', true, true),
+          k('Projetos no pipeline', '23', '7 em fase de lançamento', true, true),
+        ] },
+        { t: 'table', title: 'Pipeline de inovação (stage-gate)', sub: 'Probabilidade de sucesso estimada pelo Cortex com dados de lançamentos anteriores', span: true, status: ['Fase'],
+          columns: ['Projeto', 'Marca', 'Fábrica', 'Fase', 'Lançamento', 'Vendas ano 1', 'Prob. sucesso'],
+          rows: [
+            { Projeto: 'Milaneza Integral +Fibra (5 formatos)', Marca: 'Milaneza', 'Fábrica': 'Maia I', Fase: 'Lançamento', 'Lançamento': 'fev/27', 'Vendas ano 1': '€3,1 M', 'Prob. sucesso': '78%' },
+            { Projeto: 'Bolacha Alfa sem açúcares adicionados', Marca: 'Nacional', 'Fábrica': 'Maia · bolachas', Fase: 'Teste de consumidor', 'Lançamento': 'abr/27', 'Vendas ano 1': '€1,4 M', 'Prob. sucesso': '64%' },
+            { Projeto: 'Napolitana T00 1 kg (consumidor)', Marca: 'Napolitana', 'Fábrica': 'Lisboa', Fase: 'Lançamento', 'Lançamento': 'jan/27', 'Vendas ano 1': '€0,9 M', 'Prob. sucesso': '81%' },
+            { Projeto: 'Del Mondo Paccheri e Orecchiette', Marca: 'Del Mondo', 'Fábrica': 'Maia I', Fase: 'Desenvolvimento', 'Lançamento': 'mai/27', 'Vendas ano 1': '€0,7 M', 'Prob. sucesso': '69%' },
+            { Projeto: 'Granola Nacional proteica', Marca: 'Nacional', 'Fábrica': 'Trofa', Fase: 'Conceito', 'Lançamento': 'set/27', 'Vendas ano 1': '€1,2 M', 'Prob. sucesso': '52%' },
+            { Projeto: 'Adriana Bronze (trefilada a bronze)', Marca: 'Adriana', 'Fábrica': 'Litovel', Fase: 'Desenvolvimento', 'Lançamento': 'mar/27', 'Vendas ano 1': '€1,6 M', 'Prob. sucesso': '73%' },
+          ] },
+        ch('mk7', 'Nutri-Score da gama (n.º de SKUs)', 'Portugal · 312 referências de consumidor', 'pie', ['v'],
+          pie([['A', 168], ['B', 75], ['C', 41], ['D', 22], ['E', 6]]),
+          'As massas e farinhas são quase todas A; as notas D e E concentram-se em bolachas recheadas e barras com chocolate.',
+          'Com as reformulações em curso, 84% da gama terá A ou B no fim de 2027.',
+          'Priorizar a reformulação das 6 referências E (barras de chocolate).', { ratio: true }),
+        { t: 'agents', items: [
+          ag('ag-receitas', 'Receitas e conteúdos por tendência', 'humano', 'Tema em crescimento > 50% em 30 dias', '+12% de alcance orgânico', [
+            ['Sinal', 'Tema "pizza caseira com Napolitana T00" +64% em 30 dias.'],
+            ['Geração', 'Cortex redige 3 receitas e 6 legendas com as fichas técnicas e alergénios da Napolitana.'],
+            ['Aprovação humana', 'Revisão pela equipa de marca antes de publicar.'],
+            ['Ação', 'Conteúdos agendados no Instagram e no site da marca.'],
+          ], { approver: 'Mariana Couto — Diretora de Marketing', domain: 'Marketing', last: 'ontem' }),
+        ] },
+        { t: 'models', items: [
+          ml('Previsão de sucesso de lançamento', 'Classificação com dados de 64 lançamentos', 'Precisão 79%', 'categoria, preço relativo, teste de consumidor, distribuição inicial', 'Marketing', 'Produção', 'Estável', 'set/26'),
+          ml('Marketing Mix Model', 'Bayesiano · 3 anos de dados semanais', 'Erro de previsão 6,1%', 'media por canal, preço, promoções, distribuição, sazonalidade', 'Marketing', 'Produção', 'Estável', 'out/26', '€0,3 M/ano'),
+          ml('Temas e sentimento de redes sociais', 'Cortex AI_SENTIMENT + agrupamento', '18 400 menções/mês', 'publicações, comentários, avaliações de loja online', 'Marketing', 'Produção', 'Estável', 'contínuo'),
+        ] },
+      ],
+    },
+  ],
+  questions: [
+    { q: 'Como está a saúde da Milaneza?', a: 'Muito sólida: **71% de notoriedade espontânea** (+3 pp), **58% de penetração** nos lares e NPS de **+42**. Converte 82% da notoriedade em compra. O sentimento caiu nas semanas 41–43 (massa partida) mas já recuperou para **+0,51**.' },
+    { q: 'Onde devemos investir mais em media?', a: 'Segundo o Marketing Mix Model, **folhetos e trade marketing (ROI 2,9)** e **digital (2,7)** rendem mais do que televisão (1,9). Mover 15% do orçamento de exterior para digital acrescenta **€0,31 M** de margem. Atenção: o digital satura acima de €180 mil/mês.' },
+    { q: 'Que lançamentos têm maior probabilidade de sucesso?', a: 'Os três com maior probabilidade:\n• **Napolitana T00 1 kg** para o consumidor — 81% (jan/27)\n• **Milaneza Integral +Fibra** — 78% (fev/27, €3,1 M no ano 1)\n• **Adriana Bronze** — 73% (mar/27)\nA granola proteica Nacional está em conceito, com 52%.' },
+    { q: 'Qual o perfil nutricional da gama?', a: '**78% das 312 referências** têm Nutri-Score A ou B (+6 pp a/a). O açúcar médio nos cereais Nacional caiu **18% desde 2023**. As 6 referências com nota E são barras com chocolate e estão priorizadas para reformulação.' },
+  ],
+};
