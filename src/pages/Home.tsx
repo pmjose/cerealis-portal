@@ -9,6 +9,12 @@ import { PLATFORM } from '../data/modules';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+// O HashRouter trata "#valor" como rota (e volta à porta de acesso), por isso a navegação interna faz scroll por id.
+const scrollToId = (id: string) => (e: React.MouseEvent) => {
+  e.preventDefault();
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+};
+
 export function CerealisSymbol({ size = 120, draw = false, color = '#121210', delay = 0 }: { size?: number; draw?: boolean; color?: string; delay?: number }) {
   const paths = [
     'M32.76,14.56c.51,2.38-.26,4.56-1.72,4.87-1.46.31-3.06-1.37-3.57-3.75-.51-2.38.26-4.57,1.72-4.88,1.46-.31,3.05,1.37,3.56,3.76Z',
@@ -76,7 +82,7 @@ function Hero() {
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.9, duration: .9 }} style={{ display: 'flex', gap: 12, marginTop: 38 }}>
           <Link to="/portal" className="btn">Entrar na Espiga <ArrowRight size={16} /></Link>
-          <a href="#valor" className="btn-ghost" style={{ padding: '12px 20px', fontSize: 15 }}>Descobrir o valor</a>
+          <button onClick={scrollToId('valor')} className="btn-ghost" style={{ padding: '12px 20px', fontSize: 15 }}>Descobrir o valor</button>
         </motion.div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0.4, 1] }} transition={{ delay: 3.6, duration: 2.4, repeat: Infinity, repeatType: 'reverse' }}
           style={{ position: 'absolute', bottom: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, fontSize: 12, letterSpacing: '.16em' }} className="faint">
@@ -478,7 +484,7 @@ export default function Home() {
         <span className="faint">×</span>
         <img src="./logos/snowflake.svg" height={18} alt="Snowflake" />
         <nav style={{ display: 'flex', gap: 18, fontSize: 14, marginLeft: 8 }} className="muted">
-          <a href="#plataforma">Plataforma</a><a href="#valor">Valor</a><a href="#agentes">Agentes</a>
+          <button onClick={scrollToId('plataforma')}>Plataforma</button><button onClick={scrollToId('valor')}>Valor</button><button onClick={scrollToId('agentes')}>Agentes</button>
         </nav>
         <Link to="/portal" className="btn btn-sm">Espiga <ArrowRight size={14} /></Link>
       </motion.header>
