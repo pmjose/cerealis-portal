@@ -20,6 +20,11 @@ export const MONTHS = ['Nov', 'Dez', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', '
 export const YTD = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out'];
 export const WEEKS = Array.from({ length: 12 }, (_, i) => `S${36 + i}`);
 export const FUT = ['Nov', 'Dez', 'Jan', 'Fev', 'Mar', 'Abr'];
+// Etiquetas em inglês para os gémeos de dados em src/data/en (mesma ordem e comprimento).
+export const MONTHS_EN = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+export const YTD_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+export const WEEKS_EN = Array.from({ length: 12 }, (_, i) => `W${36 + i}`);
+export const FUT_EN = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
 
 export function rng(seed: number) {
   let s = seed * 9301 + 49297;

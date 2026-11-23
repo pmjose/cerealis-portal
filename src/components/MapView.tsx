@@ -2,13 +2,13 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { MapPoint } from '../data/types';
+import { mapStatusLabel } from '../i18n/labels';
 
 maplibregl.setWorkerUrl(workerUrl);
 
 const KEY = import.meta.env.VITE_CARTO_KEY as string | undefined;
 const STYLE = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json' + (KEY ? `?api_key=${KEY}` : '');
 const COLORS = { ok: '#17924B', aviso: '#E08600', critico: '#D92D20' };
-const LABEL = { ok: 'Normal', aviso: 'Atenção', critico: 'Crítico' };
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 export default function MapView({ points, routes, height = 440 }: { points: MapPoint[]; routes?: [number, number][][]; height?: number }) {
@@ -27,7 +27,7 @@ export default function MapView({ points, routes, height = 440 }: { points: MapP
       if (a.status === 'critico') m.style.animation = 'pulse 1.4s infinite';
       new maplibregl.Marker({ element: m }).setLngLat([a.lng, a.lat])
         .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: '280px' }).setHTML(
-          `<div style="font-size:13px;min-width:200px"><div style="font-weight:650;margin-bottom:3px">${esc(a.name)}</div><div style="color:#6F6B60;font-size:12px">${esc(a.type)}</div><div style="margin-top:8px;display:flex;gap:6px;align-items:center;font-size:12px"><span style="width:8px;height:8px;border-radius:50%;background:${COLORS[a.status]}"></span>${LABEL[a.status]}</div><div style="margin-top:4px;font-size:12px;line-height:1.45">${esc(a.detail)}</div></div>`))
+          `<div style="font-size:13px;min-width:200px"><div style="font-weight:650;margin-bottom:3px">${esc(a.name)}</div><div style="color:#6F6B60;font-size:12px">${esc(a.type)}</div><div style="margin-top:8px;display:flex;gap:6px;align-items:center;font-size:12px"><span style="width:8px;height:8px;border-radius:50%;background:${COLORS[a.status]}"></span>${esc(mapStatusLabel(a.status))}</div><div style="margin-top:4px;font-size:12px;line-height:1.45">${esc(a.detail)}</div></div>`))
         .addTo(map);
     });
     map.on('load', () => {

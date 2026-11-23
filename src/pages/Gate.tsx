@@ -2,13 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowRight } from 'lucide-react';
-
-const LINES = [
-  'Há mais de um século que transformamos o grão.',
-  'Mais de 400 mil toneladas de cereal por ano.',
-  'Da seara à mesa de milhões, em cinco continentes.',
-  'Agora, cada grão vai ganhar inteligência.',
-];
+import { pick, LangToggle } from '../i18n';
+import * as G from './copy/gate';
 
 type Stalk = { x: number; h: number; layer: number; phase: number; flex: number; grains: number; lean: number; tone: number };
 type Mote = { x: number; y: number; vx: number; vy: number; r: number; a: number; tw: number };
@@ -237,8 +232,10 @@ export default function Gate() {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState(false);
   const [ok, setOk] = useState(false);
+  const tx = pick(G);
+  const n = tx.lines.length;
 
-  useEffect(() => { const id = setInterval(() => setI(x => (x + 1) % LINES.length), 3200); return () => clearInterval(id); }, []);
+  useEffect(() => { const id = setInterval(() => setI(x => (x + 1) % n), 3200); return () => clearInterval(id); }, [n]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,37 +249,40 @@ export default function Gate() {
     <div style={{ height: '100vh', overflow: 'hidden', position: 'relative', background: '#050403', color: '#FFF8E6' }}>
       <Seara burst={ok} />
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(44% 30% at 50% 47%, rgba(5,4,3,.55), transparent 72%)', pointerEvents: 'none' }} />
+      <motion.div animate={{ opacity: ok ? 0 : 1 }} transition={{ duration: .6 }} style={{ position: 'absolute', top: 18, right: 18, zIndex: 3 }}>
+        <LangToggle tone="dark" />
+      </motion.div>
       <motion.div animate={{ opacity: ok ? 0 : 1, y: ok ? -16 : 0 }} transition={{ duration: .6 }}
         style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px', paddingTop: '6vh' }}>
         <motion.div initial={{ opacity: 0, letterSpacing: '.5em' }} animate={{ opacity: 1, letterSpacing: '.28em' }} transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
           style={{ fontSize: 11, fontWeight: 600, color: 'rgba(253,200,80,.85)', marginBottom: 26, padding: '6px 14px', border: '1px solid rgba(253,183,4,.28)', borderRadius: 999, background: 'rgba(253,183,4,.06)' }}>
-          ACESSO RESTRITO · 2026
+          {tx.badge}
         </motion.div>
         <div style={{ height: 'clamp(84px, 11vw, 132px)', display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: 1040 }}>
           <AnimatePresence mode="wait">
             <motion.h1 key={i} initial={{ opacity: 0, y: 22, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, y: -22, filter: 'blur(12px)' }} transition={{ duration: .8, ease: [0.16, 1, 0.3, 1] }}
               className="display" style={{ fontSize: 'clamp(30px, 4.2vw, 58px)', fontWeight: 700, lineHeight: 1.06, letterSpacing: '-0.04em', textShadow: '0 4px 40px rgba(0,0,0,.6)', textWrap: 'balance', maxWidth: 940 }}>
-              {i === LINES.length - 1 ? <>Agora, cada grão vai ganhar <span className="gold-text">inteligência</span>.</> : LINES[i]}
+              {i === n - 1 ? <>{tx.last[0]}<span className="gold-text">{tx.last[1]}</span>{tx.last[2]}</> : tx.lines[i]}
             </motion.h1>
           </AnimatePresence>
         </div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1.4 }}
           style={{ margin: '14px 0 34px', fontSize: 16, color: 'rgba(255,240,210,.62)', maxWidth: 560, lineHeight: 1.55 }}>
-          Desde 1919 a alimentar o futuro. Agora, com dados em cada grão.
+          {tx.sub}
         </motion.p>
         <motion.form onSubmit={submit} initial={{ opacity: 0, y: 14 }} animate={err ? { x: [0, -12, 12, -8, 8, 0], opacity: 1, y: 0 } : { opacity: 1, y: 0 }} transition={{ delay: err ? 0 : 1.6, duration: err ? .5 : .9 }}
           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 6, paddingLeft: 18, borderRadius: 999, width: 'min(390px, 90vw)', background: 'rgba(20,15,8,.55)', border: `1px solid ${err ? 'rgba(239,68,68,.6)' : 'rgba(253,183,4,.25)'}`, backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', boxShadow: '0 20px 60px rgba(0,0,0,.45)' }}>
           <Lock size={16} color="rgba(253,200,80,.7)" />
-          <input type="password" autoFocus placeholder="Palavra-passe" value={pw} onChange={e => setPw(e.target.value)} aria-label="Palavra-passe"
+          <input type="password" autoFocus placeholder={tx.password} value={pw} onChange={e => setPw(e.target.value)} aria-label={tx.password}
             style={{ flex: 1, background: 'none', border: 0, outline: 0, fontSize: 15, color: '#FFF8E6', letterSpacing: pw ? '.2em' : 0 }} />
-          <button aria-label="Entrar" style={{ width: 42, height: 42, borderRadius: 999, background: '#FDB704', color: '#121210', display: 'grid', placeItems: 'center', boxShadow: '0 8px 28px rgba(253,183,4,.45)' }}>
+          <button aria-label={tx.enter} style={{ width: 42, height: 42, borderRadius: 999, background: '#FDB704', color: '#121210', display: 'grid', placeItems: 'center', boxShadow: '0 8px 28px rgba(253,183,4,.45)' }}>
             <ArrowRight size={18} />
           </button>
         </motion.form>
-        <div style={{ height: 22, marginTop: 12, fontSize: 13, color: '#F87171' }}>{err && 'Palavra-passe incorreta'}</div>
+        <div style={{ height: 22, marginTop: 12, fontSize: 13, color: '#F87171' }}>{err && tx.wrong}</div>
       </motion.div>
       <div style={{ position: 'absolute', bottom: 18, width: '100%', textAlign: 'center', fontSize: 11, letterSpacing: '.18em', color: 'rgba(255,230,180,.35)', zIndex: 2 }}>
-        MAIA · TROFA · PORTO · LISBOA · LITOVEL · VENTA DE BAÑOS
+        {tx.sites}
       </div>
     </div>
   );

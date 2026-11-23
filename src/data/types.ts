@@ -1,4 +1,4 @@
-export type Kpi = { label: string; value: string; delta: string; up: boolean; good: boolean; spark?: number[]; hint?: string };
+export type Kpi = { label: string; value: string; delta: string; up: boolean; good: boolean; spark?: number[]; hint?: string; ratio?: boolean };
 
 export type ChartKind = 'area' | 'bar' | 'line' | 'pie' | 'stack' | 'hbar' | 'combo';
 export type Chart = {

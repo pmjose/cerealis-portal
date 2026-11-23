@@ -3,13 +3,17 @@ import { motion } from 'framer-motion';
 import { Bot, UserCheck, Play, Check, X, Loader2, RotateCcw, Clock } from 'lucide-react';
 import type { Agent } from '../data/types';
 import { useToast } from '../ui/toast';
+import { modeLabel } from '../i18n/labels';
+import { useT } from '../i18n';
 
 export default function AgentFlow({ a, compact }: { a: Agent; compact?: boolean }) {
   const [step, setStep] = useState(-1);
   const [decision, setDecision] = useState<'pend' | 'ok' | 'no'>('pend');
   const toast = useToast();
-  const approvalIdx = a.steps.findIndex(s => s.title.startsWith('Aprovação'));
+  const t = useT();
+  const approvalIdx = a.steps.findIndex(s => /^(Aprovação|Human approval)/.test(s.title));
   const waiting = a.mode === 'humano' && step === approvalIdx && decision === 'pend';
+  const who = a.approver?.split(' — ')[0] ?? '';
 
   useEffect(() => {
     if (step < 0 || step >= a.steps.length - 1 || waiting || decision === 'no') return;
@@ -17,9 +21,9 @@ export default function AgentFlow({ a, compact }: { a: Agent; compact?: boolean 
     return () => clearTimeout(id);
   }, [step, waiting, decision, a.steps.length]);
 
-  const run = () => { setDecision('pend'); setStep(0); toast('agent', `Agente iniciado · ${a.name}`, `Gatilho: ${a.trigger}`); };
+  const run = () => { setDecision('pend'); setStep(0); toast('agent', t('cmp.agent.started', { name: a.name }), `${t('cmp.agent.trigger')}: ${a.trigger}`); };
   const done = step === a.steps.length - 1;
-  useEffect(() => { if (done) toast('success', `Agente concluído · ${a.name}`, a.steps[a.steps.length - 1].detail); }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (done) toast('success', t('cmp.agent.completed', { name: a.name }), a.steps[a.steps.length - 1].detail); }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="card" style={{ padding: 20, borderColor: waiting ? 'rgba(217,154,0,.55)' : undefined, boxShadow: waiting ? '0 0 0 4px rgba(253,183,4,.14)' : undefined, transition: '.3s' }}>
@@ -27,17 +31,17 @@ export default function AgentFlow({ a, compact }: { a: Agent; compact?: boolean 
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
             <span className={`chip ${a.mode === 'auto' ? 'sf' : 'gold'}`}>
-              {a.mode === 'auto' ? <><Bot size={12} /> Autónomo</> : <><UserCheck size={12} /> Humano no circuito</>}
+              {a.mode === 'auto' ? <Bot size={12} /> : <UserCheck size={12} />} {modeLabel(a.mode)}
             </span>
             {a.domain && <span className="chip">{a.domain}</span>}
             {a.last && <span className="chip" style={{ color: 'var(--muted)' }}><Clock size={11} /> {a.last}</span>}
           </div>
           <div style={{ fontWeight: 650, fontSize: 15.5 }}>{a.name}</div>
-          <div className="muted" style={{ fontSize: 12.5, marginTop: 4 }}>Gatilho: {a.trigger}</div>
-          <div style={{ fontSize: 12.5, marginTop: 3 }}>Impacto: <b style={{ color: 'var(--ok)' }}>{a.impact}</b></div>
+          <div className="muted" style={{ fontSize: 12.5, marginTop: 4 }}>{t('cmp.agent.trigger')}: {a.trigger}</div>
+          <div style={{ fontSize: 12.5, marginTop: 3 }}>{t('cmp.agent.impact')}: <b style={{ color: 'var(--ok)' }}>{a.impact}</b></div>
         </div>
         <button className={step < 0 ? 'btn btn-sm' : 'btn-ghost btn-sm'} style={{ flexShrink: 0 }} onClick={run}>
-          {step < 0 ? <><Play size={13} /> Executar</> : <><RotateCcw size={13} /> Repetir</>}
+          {step < 0 ? <><Play size={13} /> {t('cmp.agent.run')}</> : <><RotateCcw size={13} /> {t('cmp.agent.rerun')}</>}
         </button>
       </div>
 
@@ -60,14 +64,14 @@ export default function AgentFlow({ a, compact }: { a: Agent; compact?: boolean 
                 <div style={{ fontSize: 13, marginTop: 2, lineHeight: 1.5 }}>{s.detail}</div>
                 {isApproval && waiting && (
                   <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 10, padding: 12, borderRadius: 12, background: 'var(--gold-wash)', border: '1px solid rgba(217,154,0,.35)' }}>
-                    <div style={{ fontSize: 12, marginBottom: 8 }}>Aprovador: <b>{a.approver}</b></div>
+                    <div style={{ fontSize: 12, marginBottom: 8 }}>{t('cmp.agent.approver')}: <b>{a.approver}</b></div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn btn-sm" onClick={() => { setDecision('ok'); setStep(x => x + 1); toast('action', 'Decisão aprovada', `${a.approver?.split(' — ')[0]} aprovou: ${a.name}`); }}><Check size={13} /> Aprovar</button>
-                      <button className="btn-ghost btn-sm" onClick={() => { setDecision('no'); toast('info', 'Decisão rejeitada', `Fluxo "${a.name}" encerrado e registado na auditoria.`); }}><X size={13} /> Rejeitar</button>
+                      <button className="btn btn-sm" onClick={() => { setDecision('ok'); setStep(x => x + 1); toast('action', t('cmp.agent.approved'), t('cmp.agent.approvedText', { who, name: a.name })); }}><Check size={13} /> {t('cmp.agent.approve')}</button>
+                      <button className="btn-ghost btn-sm" onClick={() => { setDecision('no'); toast('info', t('cmp.agent.rejected'), t('cmp.agent.rejectedText', { name: a.name })); }}><X size={13} /> {t('cmp.agent.reject')}</button>
                     </div>
                   </motion.div>
                 )}
-                {isApproval && decision === 'no' && <div style={{ fontSize: 12, color: 'var(--crit)', marginTop: 6 }}>Rejeitado por {a.approver?.split(' — ')[0]} · fluxo encerrado e registado.</div>}
+                {isApproval && decision === 'no' && <div style={{ fontSize: 12, color: 'var(--crit)', marginTop: 6 }}>{t('cmp.agent.rejectedBy', { who })}</div>}
               </div>
             </div>
           );

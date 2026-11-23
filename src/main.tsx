@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import { ToastProvider } from './ui/toast';
+import { LangProvider } from './i18n';
 import Gate from './pages/Gate';
 const Home = lazy(() => import('./pages/Home'));
 const Portal = lazy(() => import('./pages/Portal'));
@@ -26,6 +27,7 @@ const Guard = ({ children }: { children: React.ReactElement }) =>
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <LangProvider>
     <ToastProvider>
       <HashRouter>
         <Suspense fallback={<Loading />}>
@@ -50,5 +52,6 @@ createRoot(document.getElementById('root')!).render(
         </Suspense>
       </HashRouter>
     </ToastProvider>
+    </LangProvider>
   </StrictMode>
 );

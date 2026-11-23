@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, Database, Brain, Bot, Share2, ShieldCheck, Store, Check, UserCheck, Sparkles, ChevronDown, Wheat, Factory, Truck, LineChart, Users,
 } from 'lucide-react';
-import { GROUP, BRANDS } from '../data/facts';
-import { PLATFORM } from '../data/modules';
+import { useData } from '../data';
+import { pick, LangToggle } from '../i18n';
+import { fmtNum, fmtEurM } from '../i18n/format';
+import * as H from './copy/home';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -42,7 +44,7 @@ function Counter({ to, dec = 0, prefix = '', suffix = '' }: { to: number; dec?: 
     const c = animate(0, to, { duration: 2.2, ease: EASE, onUpdate: setV });
     return () => c.stop();
   }, [inView, to]);
-  return <span ref={ref}>{prefix}{v.toLocaleString('pt-PT', { minimumFractionDigits: dec, maximumFractionDigits: dec })}{suffix}</span>;
+  return <span ref={ref}>{prefix}{fmtNum(v, dec)}{suffix}</span>;
 }
 
 function Reveal({ children, delay = 0, y = 50, style }: { children: React.ReactNode; delay?: number; y?: number; style?: React.CSSProperties }) {
@@ -60,6 +62,7 @@ function Hero() {
   const op = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const glow = useTransform(scrollYProgress, [0, 1], [1, 1.8]);
+  const tx = pick(H).hero;
   return (
     <section ref={ref} style={{ height: '150vh', position: 'relative' }}>
       <motion.div style={{ scale, opacity: op, y, position: 'sticky', top: 0, height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
@@ -75,18 +78,18 @@ function Hero() {
         </motion.div>
         <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.3, delay: 1.9, ease: EASE }}
           className="h-xl" style={{ fontSize: 'clamp(40px, 5.7vw, 92px)', maxWidth: 1340 }}>
-          Cereais que alimentam o futuro.<br /><span className="gold-text">Dados que o decidem.</span>
+          {tx.title}<br /><span className="gold-text">{tx.titleGold}</span>
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 1.2 }} className="lead" style={{ maxWidth: 780, marginTop: 30 }}>
-          Apresentamos a <b style={{ color: 'var(--ink)' }}>Espiga</b> — a plataforma de dados, IA e agentes do Grupo Cerealis. Do trigo que chega a Leixões à massa na prateleira do Continente, do Albert ou da Mercadona, construída sobre o Snowflake AI Data Cloud.
+          {tx.leadPre}<b style={{ color: 'var(--ink)' }}>Espiga</b>{tx.leadPost}
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.9, duration: .9 }} style={{ display: 'flex', gap: 12, marginTop: 38 }}>
-          <Link to="/portal" className="btn">Entrar na Espiga <ArrowRight size={16} /></Link>
-          <button onClick={scrollToId('valor')} className="btn-ghost" style={{ padding: '12px 20px', fontSize: 15 }}>Descobrir o valor</button>
+          <Link to="/portal" className="btn">{tx.enter} <ArrowRight size={16} /></Link>
+          <button onClick={scrollToId('valor')} className="btn-ghost" style={{ padding: '12px 20px', fontSize: 15 }}>{tx.discover}</button>
         </motion.div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0.4, 1] }} transition={{ delay: 3.6, duration: 2.4, repeat: Infinity, repeatType: 'reverse' }}
           style={{ position: 'absolute', bottom: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, fontSize: 12, letterSpacing: '.16em' }} className="faint">
-          DESLIZE <ChevronDown size={16} />
+          {tx.scroll} <ChevronDown size={16} />
         </motion.div>
       </motion.div>
     </section>
@@ -99,16 +102,11 @@ function Story() {
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const scale = useTransform(p, [0, 1], [1.22, 1]);
   const dark = useTransform(p, [0, 0.15, 0.9], [0.15, 0.55, 0.7]);
-  const lines: [string, string][] = [
-    ['1919', 'Águas Santas, Maia. Três sócios e uma moagem.'],
-    ['1933', 'Nascem as massas Milaneza. Em 1962, a primeira semolaria portuguesa.'],
-    ['2026', '10 fábricas em Portugal, Chéquia e Espanha. 412 mil toneladas de cereal por ano.'],
-    ['Agora', 'Um novo ingrediente em cada grão: dados.'],
-  ];
+  const { alt, lines } = pick(H).story;
   return (
     <section ref={ref} style={{ height: '320vh', position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
-        <motion.img src="./img/colheita.jpg" alt="Colheita de cereal" style={{ scale, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <motion.img src="./img/colheita.jpg" alt={alt} style={{ scale, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <motion.div style={{ opacity: dark, position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #0F0E0B 0%, rgba(15,14,11,.55) 45%, #0F0E0B 100%)' }} />
         <div style={{ position: 'relative', height: '100%', display: 'grid', placeItems: 'center', padding: 32 }}>
           {lines.map(([y, t], i) => <StoryLine key={y} p={p} i={i} n={lines.length} year={y} text={t} />)}
@@ -132,18 +130,21 @@ function StoryLine({ p, i, n, year, text }: { p: MotionValue<number>; i: number;
 
 /* ── Faixa amarela com números ── */
 function Numbers() {
-  const items: [React.ReactNode, string][] = [
-    [<Counter to={GROUP.revenue2026E} dec={0} prefix="€" suffix=" M" />, 'vendas previstas para 2026, com a Pasta VB3 desde abril'],
-    [<Counter to={226} suffix=" mil t" />, 'de massa por ano entre Maia, Litovel e Venta de Baños'],
-    [<Counter to={GROUP.employees} />, 'pessoas em 3 países e 10 fábricas'],
-    [<Counter to={140} suffix="+" />, 'produtos em cinco continentes'],
+  const { GROUP } = useData().facts;
+  const { m, kt, numbers: tx } = pick(H);
+  const values: React.ReactNode[] = [
+    <Counter to={GROUP.revenue2026E} dec={0} prefix="€" suffix={m} />,
+    <Counter to={226} suffix={kt} />,
+    <Counter to={GROUP.employees} />,
+    <Counter to={140} suffix="+" />,
   ];
+  const items = values.map((v, i): [React.ReactNode, string] => [v, tx.labels[i]]);
   return (
     <section className="yellow-band" style={{ position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', right: -120, top: -80, opacity: .1 }}><CerealisSymbol size={620} /></div>
       <div className="v-section" style={{ paddingTop: 120, paddingBottom: 120 }}>
-        <Reveal><div className="eyebrow" style={{ color: 'var(--ink)', opacity: .7 }}>Cerealis hoje</div></Reveal>
-        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 72px)', marginTop: 14, maxWidth: 900 }}>Um dos maiores grupos agroalimentares da Península Ibérica.</h2></Reveal>
+        <Reveal><div className="eyebrow" style={{ color: 'var(--ink)', opacity: .7 }}>{tx.eyebrow}</div></Reveal>
+        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 72px)', marginTop: 14, maxWidth: 900 }}>{tx.title}</h2></Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 28, marginTop: 70 }}>
           {items.map(([v, l], i) => (
             <Reveal key={i} delay={.1 + i * .1}>
@@ -160,8 +161,8 @@ function Numbers() {
 }
 
 /* ── Fontes dispersas que convergem ── */
-const SOURCES = ['SAP S/4HANA · Maia', 'ERP Litovel', 'SAP · Venta de Baños', 'MES das linhas de massa', 'SCADA das moagens', 'LIMS · laboratório', 'Bühler Insights', 'WMS · hub da Maia', 'TMS · transportes', 'NielsenIQ', 'Portais Sonae MC e JM', 'EDI Mercadona', 'Euronext MATIF', 'IPMA · meteorologia', 'AIS · navios', 'Excel de compras', 'Apoio ao Consumidor', 'SuccessFactors', 'Contadores de energia', 'Redes sociais'];
 function Sources() {
+  const tx = pick(H).sources;
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const coreScale = useTransform(p, [0.45, 0.75], [0.2, 1]);
@@ -173,28 +174,27 @@ function Sources() {
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(50% 40% at 50% 50%, rgba(41,181,232,.12), transparent 70%)' }} />
         <motion.div style={{ opacity: t1, position: 'absolute', top: '11vh', width: '100%', textAlign: 'center', padding: '0 24px' }}>
-          <div className="eyebrow">O desafio</div>
-          <h2 className="h-lg" style={{ fontSize: 'clamp(34px, 4.6vw, 64px)', marginTop: 14, textWrap: 'balance' }}>Cada grão gera dados.<br /><span style={{ color: '#8E897C' }}>Hoje vivem em dezenas de sistemas.</span></h2>
+          <div className="eyebrow">{tx.eyebrow}</div>
+          <h2 className="h-lg" style={{ fontSize: 'clamp(34px, 4.6vw, 64px)', marginTop: 14, textWrap: 'balance' }}>{tx.title}<br /><span style={{ color: '#8E897C' }}>{tx.titleMuted}</span></h2>
         </motion.div>
-        {SOURCES.map((s, i) => <SourceChip key={s} p={p} i={i} label={s} />)}
+        {tx.chips.map((s, i) => <SourceChip key={s} p={p} i={i} n={tx.chips.length} label={s} />)}
         <motion.div style={{ scale: coreScale, opacity: coreOp, position: 'absolute', left: '50%', top: '50%', width: 300, height: 300, marginLeft: -150, marginTop: -150, borderRadius: '50%', display: 'grid', placeItems: 'center',
           background: 'radial-gradient(circle at 50% 40%, rgba(41,181,232,.45), rgba(17,86,127,.25) 55%, rgba(17,86,127,0) 72%)' }}>
           <div style={{ textAlign: 'center' }}>
             <img src="./logos/snowflake.svg" height={34} alt="Snowflake" style={{ margin: '0 auto', filter: 'brightness(0) invert(1)' }} />
             <div className="display" style={{ fontSize: 28, fontWeight: 700, marginTop: 14, letterSpacing: '-0.03em' }}>Espiga</div>
-            <div style={{ fontSize: 13, color: '#BDE9F8', marginTop: 4 }}>uma só verdade</div>
+            <div style={{ fontSize: 13, color: '#BDE9F8', marginTop: 4 }}>{tx.core}</div>
           </div>
         </motion.div>
         <motion.div style={{ opacity: t2, position: 'absolute', bottom: '10vh', width: '100%', textAlign: 'center', padding: '0 24px' }}>
-          <h2 className="h-lg" style={{ fontSize: 'clamp(32px, 4vw, 56px)' }}>Um só lugar. <span className="sf-text">Governado. Em tempo real.</span></h2>
-          <p style={{ color: '#A9A496', fontSize: 18, marginTop: 14 }}>Três países, três ERPs e todas as linhas de produção num modelo de dados comum — sem cópias, sem silos.</p>
+          <h2 className="h-lg" style={{ fontSize: 'clamp(32px, 4vw, 56px)' }}>{tx.end}<span className="sf-text">{tx.endSf}</span></h2>
+          <p style={{ color: '#A9A496', fontSize: 18, marginTop: 14 }}>{tx.endSub}</p>
         </motion.div>
       </div>
     </section>
   );
 }
-function SourceChip({ p, i, label }: { p: MotionValue<number>; i: number; label: string }) {
-  const n = SOURCES.length;
+function SourceChip({ p, i, n, label }: { p: MotionValue<number>; i: number; n: number; label: string }) {
   const ang = (i / n) * Math.PI * 2;
   const sx = Math.cos(ang * 3.1 + i) * (28 + (i % 4) * 4), sy = 12 + Math.sin(ang * 2.3 + i * 1.7) * (14 + (i % 3) * 4);
   const rx = Math.cos(ang) * 26, ry = Math.sin(ang) * 24;
@@ -211,14 +211,16 @@ function SourceChip({ p, i, label }: { p: MotionValue<number>; i: number; label:
 
 /* ── Cadeia de valor em scroll horizontal ── */
 const CHAIN = [
-  { img: 'seara', icon: Wheat, step: '01', t: 'Compra & origem', d: 'Preço do trigo duro e mole previsto com Euronext, câmbio EUR/USD, frete e meteorologia do Marketplace. Cobertura e hedging decididos com dados, não com intuição.', k: '-2,1%', kl: 'custo do trigo vs. mercado' },
-  { img: 'colheita', icon: ShieldCheck, step: '02', t: 'Receção & qualidade', d: 'Proteína, humidade e risco de micotoxinas (DON) calculados antes do navio atracar em Leixões ou Lisboa. Cada lote ligado à sua origem.', k: '100%', kl: 'lotes com risco previsto' },
-  { img: 'farinhas', icon: Factory, step: '03', t: 'Moagem & semolaria', d: 'Mistura ótima de trigos e taxa de extração otimizadas com Snowpark — da moagem de Lisboa (720 t/24 h) à semolaria da Maia.', k: '+0,8 pp', kl: 'extração de farinha' },
-  { img: 'forno', icon: LineChart, step: '04', t: 'Massas, cereais, bolachas', d: 'OEE em tempo real, humidade no secador e manutenção preditiva em Maia, Trofa, Litovel e Venta de Baños.', k: '-31%', kl: 'paragens não planeadas' },
-  { img: 'massas', icon: Truck, step: '05', t: 'Planeamento & clientes', d: 'Previsão de procura por SKU e cliente, sell-out partilhado pelos retalhistas via Secure Data Sharing e entregas OTIF acompanhadas ao minuto.', k: '+2,3 pp', kl: 'OTIF' },
-  { img: 'cereais', icon: Users, step: '06', t: 'Marcas & consumidor', d: 'Promoções, preço e media medidos ao euro. Reclamações e redes sociais lidas pelo Cortex AI para proteger Milaneza, Nacional ou Adriana.', k: '-24%', kl: 'reclamações por milhão' },
+  { img: 'seara', icon: Wheat, step: '01' },
+  { img: 'colheita', icon: ShieldCheck, step: '02' },
+  { img: 'farinhas', icon: Factory, step: '03' },
+  { img: 'forno', icon: LineChart, step: '04' },
+  { img: 'massas', icon: Truck, step: '05' },
+  { img: 'cereais', icon: Users, step: '06' },
 ];
 function Chain() {
+  const tx = pick(H).chain;
+  const steps = CHAIN.map((c, i) => ({ ...c, ...tx.steps[i] }));
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const x = useTransform(p, [0.05, 0.95], ['0vw', '-196vw']);
@@ -227,11 +229,11 @@ function Chain() {
     <section ref={ref} id="plataforma" style={{ height: '420vh', position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ padding: '0 6vw', marginBottom: 40 }}>
-          <div className="eyebrow">Do campo à mesa</div>
-          <h2 className="h-lg" style={{ fontSize: 'clamp(36px, 4.6vw, 68px)', marginTop: 12 }}>Um só fio de dados, <span className="gold-text">do grão à prateleira.</span></h2>
+          <div className="eyebrow">{tx.eyebrow}</div>
+          <h2 className="h-lg" style={{ fontSize: 'clamp(36px, 4.6vw, 68px)', marginTop: 12 }}>{tx.title}<span className="gold-text">{tx.titleGold}</span></h2>
         </div>
         <motion.div style={{ x, display: 'flex', gap: 28, paddingLeft: '6vw', width: 'max-content' }}>
-          {CHAIN.map(c => (
+          {steps.map(c => (
             <div key={c.step} className="card" style={{ width: 'min(46vw, 640px)', borderRadius: 30, overflow: 'hidden', display: 'grid', gridTemplateRows: '300px auto', flexShrink: 0 }}>
               <div style={{ position: 'relative', overflow: 'hidden' }}>
                 <img src={`./img/${c.img}.jpg`} alt={c.t} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -254,21 +256,16 @@ function Chain() {
 }
 
 /* ── Seis razões ── */
-const PILLARS = [
-  { icon: Database, t: 'Uma só verdade em três países', d: 'SAP da Maia, ERP de Litovel e SAP de Venta de Baños, mais MES, SCADA e LIMS, ligados ao Snowflake por Openflow e Snowpipe Streaming.' },
-  { icon: Brain, t: 'Cortex AI onde os dados estão', d: 'Previsões de trigo, procura e qualidade; LLMs que leem certificados, conhecimentos de embarque e reclamações — sem os dados saírem da plataforma.' },
-  { icon: Bot, t: 'Agentes que agem', d: 'Snowflake Intelligence e Cortex Agents levam do sinal à ação: autónomos onde é seguro, com humano no circuito onde o impacto o exige.' },
-  { icon: Share2, t: 'Partilha com retalhistas', d: 'Sell-out e stock de loja de Sonae MC, Jerónimo Martins ou Mercadona via Secure Data Sharing — diário, sem ficheiros nem portais.' },
-  { icon: ShieldCheck, t: 'Rastreabilidade ao lote', d: 'Horizon garante linhagem do navio à palete (Reg. CE 178/2002), mascaramento RGPD e controlo de acessos por país — pronto para IFS, BRCGS e NIS2.' },
-  { icon: Store, t: 'Marketplace de dados', d: 'Preços Euronext, meteorologia, frete marítimo, câmbios e dados agrícolas disponíveis em minutos, sem integrações à medida.' },
-];
+const PILLAR_ICONS = [Database, Brain, Bot, Share2, ShieldCheck, Store];
 function Pillars() {
+  const tx = pick(H).pillars;
+  const pillars = tx.items.map((p, i) => ({ icon: PILLAR_ICONS[i], ...p }));
   return (
     <section className="v-section">
-      <Reveal><div className="eyebrow" style={{ textAlign: 'center' }}>Porquê Snowflake</div></Reveal>
-      <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(40px, 5.4vw, 80px)', textAlign: 'center', marginTop: 14 }}>Seis razões.<br /><span className="faint">Uma plataforma.</span></h2></Reveal>
+      <Reveal><div className="eyebrow" style={{ textAlign: 'center' }}>{tx.eyebrow}</div></Reveal>
+      <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(40px, 5.4vw, 80px)', textAlign: 'center', marginTop: 14 }}>{tx.title}<br /><span className="faint">{tx.titleMuted}</span></h2></Reveal>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 18, marginTop: 70 }}>
-        {PILLARS.map(({ icon: I, t, d }, i) => (
+        {pillars.map(({ icon: I, t, d }, i) => (
           <motion.div key={t} className="glass" whileHover={{ y: -6 }} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-8%' }} transition={{ delay: i * .08, duration: .8, ease: EASE }}
             style={{ padding: 32, minHeight: 250, background: i === 2 ? 'linear-gradient(160deg, #FFF3C4, #FFFFFF)' : undefined }}>
             <div style={{ width: 50, height: 50, borderRadius: 15, display: 'grid', placeItems: 'center', background: i % 2 ? '#E6F6FD' : 'var(--gold-wash)', marginBottom: 22 }}>
@@ -284,39 +281,33 @@ function Pillars() {
 }
 
 /* ── Valor ── */
-const VALUE: [string, number, string][] = [
-  ['Compra inteligente de trigo duro e mole', 3.4, 'Compras & Cereais'],
-  ['Preço, promoções e mix com os retalhistas', 2.6, 'Comercial'],
-  ['Previsão de procura e S&OP (stock -16%)', 1.9, 'Supply Chain'],
-  ['Energia na secagem e na moagem (-7% kWh/t)', 1.3, 'Operações'],
-  ['Mistura ótima de trigos na moagem', 1.1, 'Moagens'],
-  ['Manutenção preditiva (-31% paragens)', 1.0, 'Operações'],
-  ['Qualidade e reclamações (-24%)', 0.6, 'Qualidade'],
-  ['Encomendas, fecho e reporte automáticos', 0.5, 'Finanças · Serviço ao Cliente'],
-];
+// € M por ano em regime, pela ordem dos casos de uso em copy/home.ts.
+const VALUE_M = [3.4, 2.6, 1.9, 1.3, 1.1, 1.0, 0.6, 0.5];
 function Value() {
+  const { GROUP } = useData().facts;
+  const { m, value: tx } = pick(H);
   return (
     <section id="valor" style={{ background: '#fff', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
       <div className="v-section" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 70, alignItems: 'center' }}>
         <div>
-          <Reveal><div className="eyebrow">O valor para a Cerealis</div></Reveal>
-          <Reveal delay={.1}><div className="h-xl" style={{ fontSize: 'clamp(64px, 9vw, 140px)', marginTop: 18 }}><Counter to={GROUP.valueRunRate} dec={1} prefix="€" suffix=" M" /></div></Reveal>
-          <Reveal delay={.2}><p className="display" style={{ fontSize: 30, fontWeight: 650, letterSpacing: '-0.03em', marginTop: 8 }}>por ano, em regime.</p></Reveal>
-          <Reveal delay={.3}><p className="lead" style={{ marginTop: 22, fontSize: 18 }}>Oito casos de uso medidos linha a linha na Espiga. <b style={{ color: 'var(--ink)' }}>€{GROUP.valueYTD.toLocaleString('pt-PT')} M já capturados em 2026</b>, com retorno do investimento em menos de nove meses.</p></Reveal>
+          <Reveal><div className="eyebrow">{tx.eyebrow}</div></Reveal>
+          <Reveal delay={.1}><div className="h-xl" style={{ fontSize: 'clamp(64px, 9vw, 140px)', marginTop: 18 }}><Counter to={GROUP.valueRunRate} dec={1} prefix="€" suffix={m} /></div></Reveal>
+          <Reveal delay={.2}><p className="display" style={{ fontSize: 30, fontWeight: 650, letterSpacing: '-0.03em', marginTop: 8 }}>{tx.perYear}</p></Reveal>
+          <Reveal delay={.3}><p className="lead" style={{ marginTop: 22, fontSize: 18 }}>{tx.leadPre}<b style={{ color: 'var(--ink)' }}>{tx.captured(fmtEurM(GROUP.valueYTD))}</b>{tx.leadPost}</p></Reveal>
         </div>
         <div style={{ display: 'grid', gap: 18 }}>
-          {VALUE.map(([t, v, f], i) => (
+          {tx.cases.map(([t, f], i) => { const v = VALUE_M[i]; return (
             <Reveal key={t} delay={i * .06} y={24}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                 <div><span style={{ fontWeight: 600, fontSize: 15.5 }}>{t}</span> <span className="faint" style={{ fontSize: 13 }}>· {f}</span></div>
-                <span className="display" style={{ fontWeight: 700, fontSize: 18 }}>€{v.toLocaleString('pt-PT', { minimumFractionDigits: 1 })} M</span>
+                <span className="display" style={{ fontWeight: 700, fontSize: 18 }}>{fmtEurM(v)}</span>
               </div>
               <div className="bar" style={{ height: 10 }}>
                 <motion.i initial={{ width: 0 }} whileInView={{ width: `${(v / 3.4) * 100}%` }} viewport={{ once: true }} transition={{ duration: 1.4, delay: .2 + i * .07, ease: EASE }}
                   style={{ background: i === 0 ? 'linear-gradient(90deg, #E09A00, #FDB704)' : 'var(--ink)' }} />
               </div>
             </Reveal>
-          ))}
+          ); })}
         </div>
       </div>
     </section>
@@ -324,15 +315,10 @@ function Value() {
 }
 
 /* ── Agente ao vivo ── */
-const AGENT = [
-  ['Sinal', 'Trigo duro -4,2% em 10 dias; cobertura da semolaria em 6,1 semanas (política: 8).'],
-  ['Insight', 'Janela de compra: spread CWAD vs. Occitânia no mínimo de 14 meses.'],
-  ['Diagnóstico', 'Sem compra, rutura de sêmola na Maia a 2 fev; risco de DON elevado no lote mexicano.'],
-  ['Recomendação', 'Comprar 25 000 t CWAD n.º 1 para jan–fev e cobrir 60% do USD a 3 meses.'],
-  ['Aprovação humana', 'Nuno Ferraz, Diretor de Compras, aprova no Teams.'],
-  ['Ação', 'Contrato e pedido de compra criados no SAP; cobertura cambial enviada à tesouraria.'],
-];
 function AgentLive() {
+  const { PLATFORM } = useData();
+  const tx = pick(H).agent;
+  const AGENT = tx.steps;
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: '-20%' });
   const [s, setS] = useState(-1);
@@ -340,25 +326,25 @@ function AgentLive() {
     if (!inView) return;
     const id = setInterval(() => setS(x => (x >= AGENT.length + 2 ? 0 : x + 1)), 1300);
     return () => clearInterval(id);
-  }, [inView]);
+  }, [inView, AGENT.length]);
   return (
     <section className="v-section" id="agentes" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 70, alignItems: 'center' }}>
       <div>
-        <Reveal><div className="eyebrow">Agentes Cortex</div></Reveal>
-        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 4.8vw, 70px)', marginTop: 14 }}>Do sinal à ação.<br /><span className="faint">Com humano no circuito.</span></h2></Reveal>
-        <Reveal delay={.2}><p className="lead" style={{ marginTop: 24, fontSize: 18 }}>{PLATFORM.agents} agentes trabalham em compras, produção, qualidade, supply chain e comercial. Os de baixo risco executam sozinhos; os que mexem em contratos, preços ou pessoas pedem aprovação — e tudo fica auditado.</p></Reveal>
+        <Reveal><div className="eyebrow">{tx.eyebrow}</div></Reveal>
+        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 4.8vw, 70px)', marginTop: 14 }}>{tx.title}<br /><span className="faint">{tx.titleMuted}</span></h2></Reveal>
+        <Reveal delay={.2}><p className="lead" style={{ marginTop: 24, fontSize: 18 }}>{tx.lead(PLATFORM.agents)}</p></Reveal>
         <Reveal delay={.3}>
           <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
-            <span className="chip" style={{ padding: '7px 14px', fontSize: 13 }}><Bot size={14} /> {PLATFORM.auto} autónomos</span>
-            <span className="chip gold" style={{ padding: '7px 14px', fontSize: 13 }}><UserCheck size={14} /> {PLATFORM.human} com aprovação humana</span>
-            <span className="chip sf" style={{ padding: '7px 14px', fontSize: 13 }}><Sparkles size={14} /> 1 280 ações em 2026</span>
+            <span className="chip" style={{ padding: '7px 14px', fontSize: 13 }}><Bot size={14} /> {tx.auto(PLATFORM.auto)}</span>
+            <span className="chip gold" style={{ padding: '7px 14px', fontSize: 13 }}><UserCheck size={14} /> {tx.human(PLATFORM.human)}</span>
+            <span className="chip sf" style={{ padding: '7px 14px', fontSize: 13 }}><Sparkles size={14} /> {tx.actions}</span>
           </div>
         </Reveal>
       </div>
       <div ref={ref} className="glass" style={{ padding: 30, borderRadius: 28 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-          <div><div className="faint" style={{ fontSize: 12, letterSpacing: '.1em', fontWeight: 600 }}>AGENTE · COMPRAS & CEREAIS</div><div className="display" style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>Cobertura de trigo duro</div></div>
-          <span className="chip gold"><UserCheck size={12} /> Humano no circuito</span>
+          <div><div className="faint" style={{ fontSize: 12, letterSpacing: '.1em', fontWeight: 600 }}>{tx.cardEyebrow}</div><div className="display" style={{ fontSize: 21, fontWeight: 700, marginTop: 4 }}>{tx.cardTitle}</div></div>
+          <span className="chip gold"><UserCheck size={12} /> {tx.hitl}</span>
         </div>
         {AGENT.map(([t, d], i) => {
           const done = i < s, active = i === s, isApproval = i === 4;
@@ -384,17 +370,15 @@ function AgentLive() {
 }
 
 /* ── Três países / integrações ── */
+const NODES = [{ x: 14, y: 70, flag: 'PT' }, { x: 33, y: 46, flag: 'ES' }, { x: 78, y: 26, flag: 'CZ' }];
 function Countries() {
-  const nodes = [
-    { x: 14, y: 70, flag: 'PT', t: 'Portugal', d: 'Maia · Trofa · Porto · Lisboa', s: '8 fábricas · €205,6 M YTD' },
-    { x: 33, y: 46, flag: 'ES', t: 'Espanha', d: 'Venta de Baños · Palência', s: 'desde abril de 2026 · €58,8 M YTD' },
-    { x: 78, y: 26, flag: 'CZ', t: 'Chéquia & Eslováquia', d: 'Litovel · Olomouc', s: 'Cerealis a.s. · €61,4 M YTD' },
-  ];
+  const tx = pick(H).countries;
+  const nodes = NODES.map((n, i) => ({ ...n, ...tx.nodes[i] }));
   return (
     <section className="ink-band" style={{ overflow: 'hidden' }}>
       <div className="v-section">
-        <Reveal><div className="eyebrow">Crescer por aquisição</div></Reveal>
-        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 74px)', marginTop: 14, maxWidth: 900 }}>Três países. Um só modelo de dados. <span style={{ color: '#FDB704' }}>Pronto para a próxima integração.</span></h2></Reveal>
+        <Reveal><div className="eyebrow">{tx.eyebrow}</div></Reveal>
+        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 74px)', marginTop: 14, maxWidth: 900 }}>{tx.title}<span style={{ color: '#FDB704' }}>{tx.titleGold}</span></h2></Reveal>
         <div style={{ position: 'relative', height: 420, marginTop: 50, borderRadius: 30, background: 'radial-gradient(60% 80% at 50% 50%, rgba(41,181,232,.10), transparent 70%)', border: '1px solid rgba(255,255,255,.08)' }}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
             {nodes.map(n => <line key={n.flag} x1={n.x} y1={n.y} x2={52} y2={56} stroke="#29B5E8" strokeWidth={0.25} className="flow" vectorEffect="non-scaling-stroke" />)}
@@ -415,7 +399,7 @@ function Countries() {
           ))}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 18, marginTop: 28 }}>
-          {[['2024', 'Europasta → Cerealis a.s.', '100% do capital; dados de Litovel integrados em 9 semanas.'], ['2026', 'Cerealto Pasta VB3', 'Dia 1 com reporte consolidado; MES e SAP ligados ao Snowflake em 38 dias.'], ['Próxima', 'Modelo de integração replicável', 'Modelo de dados, políticas Horizon e painéis prontos a aplicar a uma nova unidade.']].map(([y, t, d], i) => (
+          {tx.milestones.map(([y, t, d], i) => (
             <Reveal key={y} delay={i * .1}>
               <div style={{ borderTop: '1px solid rgba(255,255,255,.18)', paddingTop: 18 }}>
                 <div style={{ color: '#FDB704', fontWeight: 700, fontSize: 14 }}>{y}</div>
@@ -432,13 +416,15 @@ function Countries() {
 
 /* ── Marcas ── */
 function Brands() {
+  const { BRANDS } = useData().facts;
+  const tx = pick(H).brands;
   const shelf = BRANDS.filter(b => b.img);
   return (
     <section style={{ padding: '140px 0', overflow: 'hidden' }}>
       <div style={{ maxWidth: 1220, margin: '0 auto', padding: '0 32px' }}>
-        <Reveal><div className="eyebrow">As nossas marcas</div></Reveal>
-        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 74px)', marginTop: 14 }}>11 marcas. <span className="faint">Na mesa de milhões.</span></h2></Reveal>
-        <Reveal delay={.2}><p className="lead" style={{ maxWidth: 760, marginTop: 18, fontSize: 18 }}>Da Milaneza (desde 1933) e da Nacional (desde 1849) à Adriana e às Zátkovy na Chéquia, cada marca passa a ter a sua saúde, o seu preço e o seu consumidor medidos todos os dias.</p></Reveal>
+        <Reveal><div className="eyebrow">{tx.eyebrow}</div></Reveal>
+        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 74px)', marginTop: 14 }}>{tx.title}<span className="faint">{tx.titleMuted}</span></h2></Reveal>
+        <Reveal delay={.2}><p className="lead" style={{ maxWidth: 760, marginTop: 18, fontSize: 18 }}>{tx.lead}</p></Reveal>
       </div>
       <div style={{ display: 'flex', gap: 22, marginTop: 60, width: 'max-content', animation: 'marquee 60s linear infinite' }}>
         {[...shelf, ...shelf].map((b, i) => (
@@ -455,13 +441,14 @@ function Brands() {
 
 /* ── Confiança ── */
 function Trust() {
-  const items = ['Linhagem lote a lote', 'Rastreabilidade em 4 minutos', 'Mascaramento RGPD', 'Acesso por país e função', 'Auditoria de cada ação de agente', 'Residência de dados na UE', 'IFS Food · BRCGS', 'NIS2', 'Reg. CE 178/2002'];
+  const tx = pick(H).trust;
+  const items = tx.items;
   return (
     <section style={{ background: '#fff', borderTop: '1px solid var(--line)' }}>
       <div className="v-section" style={{ textAlign: 'center' }}>
         <Reveal><ShieldCheck size={44} style={{ margin: '0 auto' }} color="#D99A00" /></Reveal>
-        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 72px)', marginTop: 20 }}>Confiança até ao lote.</h2></Reveal>
-        <Reveal delay={.2}><p className="lead" style={{ maxWidth: 760, margin: '18px auto 0', fontSize: 18 }}>Uma recolha simulada da Milaneza Esparguete 500 g identifica os 38 destinos de um lote em 4 minutos — do navio de trigo à loja. Snowflake Horizon governa quem vê o quê, em cada país.</p></Reveal>
+        <Reveal delay={.1}><h2 className="h-lg" style={{ fontSize: 'clamp(38px, 5vw, 72px)', marginTop: 20 }}>{tx.title}</h2></Reveal>
+        <Reveal delay={.2}><p className="lead" style={{ maxWidth: 760, margin: '18px auto 0', fontSize: 18 }}>{tx.lead}</p></Reveal>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 40, maxWidth: 900, marginInline: 'auto' }}>
           {items.map((t, i) => (
             <motion.span key={t} className="chip" initial={{ opacity: 0, scale: .9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * .05 }}
@@ -474,6 +461,8 @@ function Trust() {
 }
 
 export default function Home() {
+  const { PLATFORM } = useData();
+  const { nav, cta, footer } = pick(H);
   return (
     <div style={{ overflowX: 'clip', background: '#FBF9EE' }}>
       <motion.div initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 1.5, ease: 'easeOut' }}
@@ -484,8 +473,9 @@ export default function Home() {
         <span className="faint">×</span>
         <img src="./logos/snowflake.svg" height={18} alt="Snowflake" />
         <nav style={{ display: 'flex', gap: 18, fontSize: 14, marginLeft: 8 }} className="muted">
-          <button onClick={scrollToId('plataforma')}>Plataforma</button><button onClick={scrollToId('valor')}>Valor</button><button onClick={scrollToId('agentes')}>Agentes</button>
+          <button onClick={scrollToId('plataforma')}>{nav.platform}</button><button onClick={scrollToId('valor')}>{nav.value}</button><button onClick={scrollToId('agentes')}>{nav.agents}</button>
         </nav>
+        <LangToggle />
         <Link to="/portal" className="btn btn-sm">Espiga <ArrowRight size={14} /></Link>
       </motion.header>
 
@@ -504,14 +494,14 @@ export default function Home() {
       <section className="yellow-band" style={{ position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', left: -160, bottom: -200, opacity: .12 }}><CerealisSymbol size={700} /></div>
         <div className="v-section" style={{ textAlign: 'center', paddingTop: 150, paddingBottom: 150 }}>
-          <Reveal><h2 className="h-xl" style={{ fontSize: 'clamp(44px, 7vw, 110px)' }}>Pronto para ver<br />a seara a pensar?</h2></Reveal>
-          <Reveal delay={.2}><Link to="/portal" className="btn" style={{ marginTop: 44, fontSize: 18, padding: '18px 32px' }}>Entrar na Espiga <ArrowRight size={18} /></Link></Reveal>
-          <Reveal delay={.3}><div style={{ marginTop: 26, display: 'flex', gap: 22, justifyContent: 'center', fontSize: 14, opacity: .75 }}><span>{PLATFORM.functions} funções</span><span>· {PLATFORM.units} unidades de negócio</span><span>· {PLATFORM.agents} agentes</span><span>· {PLATFORM.models} modelos de ML</span></div></Reveal>
+          <Reveal><h2 className="h-xl" style={{ fontSize: 'clamp(44px, 7vw, 110px)' }}>{cta.title[0]}<br />{cta.title[1]}</h2></Reveal>
+          <Reveal delay={.2}><Link to="/portal" className="btn" style={{ marginTop: 44, fontSize: 18, padding: '18px 32px' }}>{cta.enter} <ArrowRight size={18} /></Link></Reveal>
+          <Reveal delay={.3}><div style={{ marginTop: 26, display: 'flex', gap: 22, justifyContent: 'center', fontSize: 14, opacity: .75 }}>{cta.counts(PLATFORM.functions, PLATFORM.units, PLATFORM.agents, PLATFORM.models).map(s => <span key={s}>{s}</span>)}</div></Reveal>
         </div>
       </section>
       <footer style={{ padding: '34px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 1220, margin: '0 auto', fontSize: 13 }} className="muted">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><img src="./logos/cerealis.svg" height={26} alt="Cerealis" /><span>Cereais que Alimentam o Futuro</span></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Powered by <img src="./logos/snowflake.svg" height={14} alt="Snowflake" /> · Demonstração · novembro de 2026</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><img src="./logos/cerealis.svg" height={26} alt="Cerealis" /><span>{footer.tagline}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Powered by <img src="./logos/snowflake.svg" height={14} alt="Snowflake" /> {footer.demo}</div>
       </footer>
     </div>
   );

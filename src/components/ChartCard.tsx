@@ -7,15 +7,18 @@ import {
 import { useToast } from '../ui/toast';
 import { downloadCsv, slug } from '../utils/download';
 import type { Chart } from '../data/types';
+import { useT } from '../i18n';
+import { fmtNum } from '../i18n/format';
 
 export const PALETTE = ['#F0A800', '#121210', '#29B5E8', '#D3122E', '#0A8FD3', '#8C5A14', '#17924B', '#9B968A'];
-const DASH = /Plano|Meta|Orçamento|Previsão|Política|Limite|Mercado|Referência|Benchmark|Alvo|Budget/;
+// Séries de referência (plano, meta, previsão, limites…) desenhadas a tracejado — termos em português e inglês.
+const DASH = /\bplan|\bmeta\b|orçamento|previsão|política|limite|mercado|referência|benchmark|alvo|budget|objetivo|alerta|especificação|target|forecast|policy|limit|market|reference|alert|specification/i;
 export const tip = {
   contentStyle: { background: 'rgba(255,255,255,.97)', border: '1px solid rgba(18,18,16,.1)', borderRadius: 12, boxShadow: '0 16px 40px -18px rgba(0,0,0,.35)', fontSize: 12.5 },
   labelStyle: { color: '#6F6B60', marginBottom: 4 }, itemStyle: { padding: 0 },
 };
 const axis = { stroke: '#9B968A', fontSize: 11, tickLine: false, axisLine: false } as const;
-const fmtN = (v: unknown) => typeof v === 'number' ? v.toLocaleString('pt-PT', { maximumFractionDigits: 1 }) : String(v);
+const fmtN = (v: unknown) => typeof v === 'number' ? fmtNum(v, 0, 1) : String(v);
 
 export const ModuleCtx = createContext<{ sv: string; schema: string }>({ sv: 'SV_GRUPO', schema: 'GRUPO' });
 
@@ -79,21 +82,23 @@ export default function ChartCard({ c }: { c: Chart }) {
   const [sql, setSql] = useState(false);
   const { sv, schema } = useContext(ModuleCtx);
   const toast = useToast();
+  const t = useT();
   const cols = ['m', ...c.keys];
   const exportData = () => {
-    downloadCsv(c.title, [{ title: c.title, columns: cols.map(k => k === 'm' ? 'Dimensão' : k), rows: c.data.map(r => Object.fromEntries(cols.map(k => [k === 'm' ? 'Dimensão' : k, r[k] ?? '']))) }]);
-    toast('download', 'Dados exportados', `${c.title} · ${c.data.length} linhas em CSV`);
+    const dim = t('cmp.chart.dimension');
+    downloadCsv(c.title, [{ title: c.title, columns: cols.map(k => k === 'm' ? dim : k), rows: c.data.map(r => Object.fromEntries(cols.map(k => [k === 'm' ? dim : k, r[k] ?? '']))) }]);
+    toast('download', t('cmp.chart.exported'), t('cmp.chart.exportedText', { title: c.title, n: c.data.length }));
   };
   const ask = () => { setOpen(true); if (phase === 'idle') { setPhase('think'); setTimeout(() => setPhase('done'), 1500); } };
   const table = `CEREALIS_DW.${schema}.${slug(c.title).toUpperCase().slice(0, 38)}`;
-  const query = `-- Cortex Analyst · modelo semântico ${sv}\nSELECT ${c.kind === 'pie' ? 'dimensao, valor' : 'periodo, ' + c.keys.map(k => slug(k)).join(', ')}\nFROM ${table}\nWHERE empresa IN ('CPA','CM','CZ01','ES01')\n  AND data_ref >= DATEADD(month, -12, CURRENT_DATE)\nORDER BY 1;`;
+  const query = t('cmp.chart.sql', { sv, table, cols: c.kind === 'pie' ? t('cmp.chart.sqlPie') : [t('cmp.chart.sqlPeriod'), ...c.keys.map(k => slug(k))].join(', ') });
 
   return (
     <div className="card" style={{ padding: 20, position: 'relative', overflow: 'hidden', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 12, gap: 10 }}>
         <div style={{ minWidth: 0 }}><div style={{ fontWeight: 650, fontSize: 14.5 }}>{c.title}</div><div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{c.subtitle}</div></div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button onClick={exportData} className="chip" title="Exportar dados (CSV)" aria-label="Exportar CSV"><Download size={13} /></button>
+          <button onClick={exportData} className="chip" title={t('cmp.chart.exportTitle')} aria-label={t('cmp.chart.exportAria')}><Download size={13} /></button>
           <button onClick={ask} className="chip sf"><Sparkles size={13} /> Cortex AI</button>
         </div>
       </div>
@@ -104,30 +109,30 @@ export default function ChartCard({ c }: { c: Chart }) {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ type: 'spring', damping: 26, stiffness: 260 }}
             style={{ position: 'absolute', inset: 8, top: 52, borderRadius: 16, padding: 16, background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(14px)', border: '1px solid rgba(41,181,232,.35)', boxShadow: '0 20px 50px -24px rgba(17,86,127,.45)', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, gap: 8 }}>
-              <span className="chip sf"><Sparkles size={12} /> Análise Cortex · {c.title}</span>
+              <span className="chip sf"><Sparkles size={12} /> {t('cmp.chart.analysis', { title: c.title })}</span>
               <div style={{ display: 'flex', gap: 4 }}>
-                <button className="chip" onClick={() => setSql(x => !x)} title="Ver SQL"><Code2 size={12} /> SQL</button>
-                <button onClick={() => setOpen(false)} aria-label="Fechar"><X size={16} className="muted" /></button>
+                <button className="chip" onClick={() => setSql(x => !x)} title={t('cmp.chart.viewSql')}><Code2 size={12} /> SQL</button>
+                <button onClick={() => setOpen(false)} aria-label={t('cmp.close')}><X size={16} className="muted" /></button>
               </div>
             </div>
             {phase === 'think' ? (
               <div className="muted" style={{ fontSize: 13 }}>
                 <div className="typing"><span /><span /><span /></div>
-                <div style={{ marginTop: 8 }}>A analisar {c.data.length} pontos com SNOWFLAKE.CORTEX e {c.model ? c.model.split('·')[0] : 'ML FORECAST'}…</div>
+                <div style={{ marginTop: 8 }}>{t('cmp.chart.thinking', { n: c.data.length, model: c.model ? c.model.split('·')[0].trim() : 'ML FORECAST' })}</div>
               </div>
             ) : (
               <div style={{ display: 'grid', gap: 11, fontSize: 13, lineHeight: 1.55 }}>
                 {sql && <pre className="mono" style={{ fontSize: 11.5, background: '#0F0E0B', color: '#EDE8D6', padding: 12, borderRadius: 12, whiteSpace: 'pre-wrap' }}>{query}</pre>}
-                {([[Lightbulb, 'Insight', c.insight, '#B37F00'], [TrendingUp, 'Previsão', c.forecast, '#1D8FC4'], [Zap, 'Ação recomendada', c.action, '#121210']] as const).map(([I, t, txt, color], i) => (
-                  <motion.div key={t} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .15 }} style={{ display: 'flex', gap: 10 }}>
+                {([[Lightbulb, t('cmp.chart.insight'), c.insight, '#B37F00'], [TrendingUp, t('cmp.chart.forecast'), c.forecast, '#1D8FC4'], [Zap, t('cmp.chart.action'), c.action, '#121210']] as const).map(([I, label, txt, color], i) => (
+                  <motion.div key={label} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .15 }} style={{ display: 'flex', gap: 10 }}>
                     <I size={16} color={color} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div><b style={{ color }}>{t}</b><div>{txt}</div></div>
+                    <div><b style={{ color }}>{label}</b><div>{txt}</div></div>
                   </motion.div>
                 ))}
                 {c.model && <div className="chip" style={{ justifySelf: 'start', fontSize: 11.5 }}><Cpu size={12} /> {c.model}</div>}
                 <button className={acted ? 'btn-ghost btn-sm' : 'btn btn-sm'} style={{ justifySelf: 'start' }}
-                  onClick={() => { if (acted) return; setActed(true); toast('action', 'Ação enviada para o fluxo de aprovação', `${c.action}`); }}>
-                  {acted ? <><Check size={14} /> Enviada para aprovação</> : <><Zap size={14} /> Executar ação</>}
+                  onClick={() => { if (acted) return; setActed(true); toast('action', t('cmp.chart.actionSent'), `${c.action}`); }}>
+                  {acted ? <><Check size={14} /> {t('cmp.chart.sentForApproval')}</> : <><Zap size={14} /> {t('cmp.chart.runAction')}</>}
                 </button>
               </div>
             )}

@@ -1,4 +1,6 @@
-// Downloads gerados no browser: CSV (Excel PT usa ';') e PDF simples de uma ou mais páginas.
+// Downloads gerados no browser: CSV (separador de lista do Excel: ';' em PT, ',' em EN) e PDF simples de uma ou mais páginas.
+import { getLang, t } from '../i18n';
+import { fmtDateTime } from '../i18n/format';
 
 function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
@@ -11,10 +13,12 @@ export const slug = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g
 export const stamp = () => new Date().toISOString().slice(0, 10);
 
 export type Sheet = { title: string; columns: string[]; rows: Record<string, string | number>[] };
-const cell = (v: unknown) => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+const cell = (v: unknown, sep: string) => { const s = String(v ?? ''); return s.includes(sep) || /["\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 
 export function downloadCsv(name: string, sheets: Sheet[]) {
-  const body = sheets.map(s => [`# ${s.title}`, s.columns.map(cell).join(';'), ...s.rows.map(r => s.columns.map(c => cell(r[c])).join(';'))].join('\r\n')).join('\r\n\r\n');
+  const sep = getLang() === 'en' ? ',' : ';';
+  const line = (vs: unknown[]) => vs.map(v => cell(v, sep)).join(sep);
+  const body = sheets.map(s => [line([`# ${s.title}`]), line(s.columns), ...s.rows.map(r => line(s.columns.map(c => r[c])))].join('\r\n')).join('\r\n\r\n');
   save(new Blob(['\ufeff' + body], { type: 'text/csv;charset=utf-8' }), `cerealis_${slug(name)}_${stamp()}.csv`);
 }
 
@@ -30,11 +34,11 @@ function enc(s: string) {
   return out;
 }
 const sub = (s: string) => s
-  .replace(/[₂]/g, '2').replace(/[≥]/g, '>=').replace(/[≤]/g, '<=').replace(/[→]/g, '->').replace(/[↑]/g, '(sobe)').replace(/[↓]/g, '(desce)')
+  .replace(/[₂]/g, '2').replace(/[≥]/g, '>=').replace(/[≤]/g, '<=').replace(/[→]/g, '->').replace(/[↑]/g, t('cmp.pdf.up')).replace(/[↓]/g, t('cmp.pdf.down'))
   .replace(/[čČ]/g, m => (m === 'č' ? 'c' : 'C')).replace(/[řŘ]/g, m => (m === 'ř' ? 'r' : 'R')).replace(/[ěĚ]/g, m => (m === 'ě' ? 'e' : 'E')).replace(/[ůŮ]/g, m => (m === 'ů' ? 'u' : 'U'));
-function wrap(t: string, max: number) {
+function wrap(s: string, max: number) {
   const out: string[] = []; let line = '';
-  for (const w of t.split(' ')) { if ((line + ' ' + w).trim().length > max) { out.push(line); line = w; } else line = (line + ' ' + w).trim(); }
+  for (const w of s.split(' ')) { if ((line + ' ' + w).trim().length > max) { out.push(line); line = w; } else line = (line + ' ' + w).trim(); }
   if (line) out.push(line); return out;
 }
 
@@ -51,7 +55,7 @@ export function downloadPdf(name: string, title: string, subtitle: string, lines
     ops += `0.86 0.85 0.8 RG 0.5 w ${M} ${Hh - 94} m ${W - M} ${Hh - 94} l S\n`;
     y = Hh - 118;
   };
-  const footer = (n: number) => `BT /F1 8 Tf 0.55 0.53 0.48 rg ${M} 30 Td (${enc(`Cerealis Espiga · Documento gerado a ${new Date().toLocaleString('pt-PT')} · Uso interno — Confidencial · Powered by Snowflake`)}) Tj ET\nBT /F1 8 Tf ${W - M - 40} 30 Td (${enc(`Pág. ${n}`)}) Tj ET\n`;
+  const footer = (n: number) => `BT /F1 8 Tf 0.55 0.53 0.48 rg ${M} 30 Td (${enc(t('cmp.pdf.footer', { date: fmtDateTime() }))}) Tj ET\nBT /F1 8 Tf ${W - M - 40} 30 Td (${enc(t('cmp.pdf.page', { n }))}) Tj ET\n`;
   header();
   for (const l of lines) {
     const size = l.size ?? 10.5, lh = size * 1.45;

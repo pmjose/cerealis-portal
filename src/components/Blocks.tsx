@@ -9,6 +9,12 @@ import MapView from './MapView';
 import AgentFlow from './AgentFlow';
 import Trace from './Trace';
 import { Meter } from '../ui/kit';
+import { modelStatusLabel, driftLabel, mapStatusLabel } from '../i18n/labels';
+import { useT } from '../i18n';
+import { fmtNum } from '../i18n/format';
+
+// Números das células na língua ativa (até 3 casas decimais, como o toLocaleString por omissão).
+const num = (v: number) => fmtNum(v, 0, 3);
 
 function Spark({ d, good }: { d: number[]; good: boolean }) {
   const min = Math.min(...d), max = Math.max(...d), r = max - min || 1;
@@ -36,17 +42,19 @@ export function KpiCard({ k, i = 0 }: { k: Kpi; i?: number }) {
   );
 }
 
-const tone = (v: string) => /crít|alto|alta|rutura|atras|falha|rejeit|bloque|vencid|parado|excede|fora/i.test(v) ? 'crit'
-  : /aten|médi|medio|aviso|risco|pend|revis|ligeir|em curso|análise|aguard|piloto|limite/i.test(v) ? 'warn'
-    : /ok|normal|baixo|baixa|conform|aprov|ativo|ativa|concl|estável|em dia|cumpr|produção|certificad|válid|no prazo|regular/i.test(v) ? 'ok' : '';
+// Cor do estado a partir do texto da célula — palavras em português e em inglês.
+const tone = (v: string) => /crít|alto|alta|rutura|atras|falha|rejeit|bloque|vencid|parado|excede|fora|critical|\bhigh\b|stock-out|delay|overdue|fail|reject|block|stopped|exceed|out of spec/i.test(v) ? 'crit'
+  : /aten|médi|medio|aviso|risco|pend|revis|rever|ligeir|em curso|análise|aguard|piloto|limite|negocia|agend|attention|medium|warning|risk|pending|review|slight|in progress|analysis|awaiting|pilot|limit|scheduled|negotiat/i.test(v) ? 'warn'
+    : /ok|normal|baixo|baixa|conform|aprov|ativo|ativa|concl|estável|em dia|cumpr|produção|certificad|válid|no prazo|regular|repetir|\blow\b|compliant|approv|active|complete|stable|on track|on time|on schedule|\bmet\b|production|certified|valid|repeat/i.test(v) ? 'ok' : '';
 
 export function DataTable({ title, sub, columns, rows, status = [], bars = [], link }: Extract<Block, { t: 'table' }>) {
   const nav = useNavigate();
+  const t = useT();
   return (
     <div className="card" style={{ padding: 8, height: '100%' }}>
       <div style={{ padding: '12px 14px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
         <div><b style={{ fontSize: 14.5 }}>{title}</b>{sub && <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{sub}</div>}</div>
-        <span className="chip" style={{ color: 'var(--muted)' }}>{rows.length} registos</span>
+        <span className="chip" style={{ color: 'var(--muted)' }}>{t('cmp.table.records', { n: rows.length })}</span>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table className="t">
@@ -56,10 +64,10 @@ export function DataTable({ title, sub, columns, rows, status = [], bars = [], l
               <tr key={i} className={link ? 'click' : ''} onClick={link ? () => nav(`${link.base}/${r[link.idCol]}`) : undefined}>
                 {columns.map((c, j) => {
                   const v = r[c];
-                  if (status.includes(c)) { const t = tone(String(v)); return <td key={c}><span className={`chip ${t}`}>{t && <span className={`dot ${t}`} style={{ width: 6, height: 6 }} />}{v}</span></td>; }
-                  if (bars.includes(c) && typeof v === 'number') return <td key={c} style={{ minWidth: 120 }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ flex: 1 }}><Meter value={v} color={v >= 85 ? 'var(--ok)' : v >= 70 ? 'var(--gold-deep)' : 'var(--crit)'} /></div><span style={{ fontSize: 12.5, fontVariantNumeric: 'tabular-nums' }}>{v.toLocaleString('pt-PT')}</span></div></td>;
+                  if (status.includes(c)) { const tn = tone(String(v)); return <td key={c}><span className={`chip ${tn}`}>{tn && <span className={`dot ${tn}`} style={{ width: 6, height: 6 }} />}{v}</span></td>; }
+                  if (bars.includes(c) && typeof v === 'number') return <td key={c} style={{ minWidth: 120 }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ flex: 1 }}><Meter value={v} color={v >= 85 ? 'var(--ok)' : v >= 70 ? 'var(--gold-deep)' : 'var(--crit)'} /></div><span style={{ fontSize: 12.5, fontVariantNumeric: 'tabular-nums' }}>{num(v)}</span></div></td>;
                   return <td key={c} style={{ fontWeight: j === 0 ? 550 : undefined, whiteSpace: j === 0 ? 'nowrap' : undefined, fontVariantNumeric: 'tabular-nums' }}>
-                    {typeof v === 'number' ? v.toLocaleString('pt-PT') : v}
+                    {typeof v === 'number' ? num(v) : v}
                     {j === 0 && link && <ArrowRight size={12} style={{ display: 'inline', marginLeft: 6, verticalAlign: -1, opacity: .4 }} />}
                   </td>;
                 })}
@@ -74,11 +82,12 @@ export function DataTable({ title, sub, columns, rows, status = [], bars = [], l
 
 const IT = { ok: [CheckCircle2, '#17924B', '#E9F7EF'], warn: [AlertTriangle, '#B86E00', '#FFF6E5'], crit: [Flame, '#C3271B', '#FDEEEC'], info: [Info, '#11567F', '#EAF6FC'] } as const;
 export function Insights({ items, title }: { items: Insight[]; title?: string }) {
+  const t = useT();
   return (
     <div className="card" style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <Sparkles size={16} color="#1D8FC4" /><b style={{ fontSize: 14.5 }}>{title ?? 'Insights Cortex'}</b>
-        <span className="chip sf" style={{ marginLeft: 'auto' }}>Gerados às 07:30 · Cortex AI</span>
+        <Sparkles size={16} color="#1D8FC4" /><b style={{ fontSize: 14.5 }}>{title ?? t('cmp.insights.title')}</b>
+        <span className="chip sf" style={{ marginLeft: 'auto' }}>{t('cmp.insights.generated')}</span>
       </div>
       <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.min(items.length, 3)}, minmax(0,1fr))`, gap: 12 }}>
         {items.map((it, i) => {
@@ -114,7 +123,7 @@ function Funnel({ title, sub, stages }: Extract<Block, { t: 'funnel' }>) {
             <div style={{ height: 26, borderRadius: 8, background: 'rgba(18,18,16,.05)', overflow: 'hidden' }}>
               <motion.div initial={{ width: 0 }} animate={{ width: `${(v / max) * 100}%` }} transition={{ duration: .9, delay: i * .08 }}
                 style={{ height: '100%', borderRadius: 8, background: i === stages.length - 1 ? 'linear-gradient(90deg,#E09A00,#FDB704)' : `rgba(18,18,16,${0.82 - i * 0.12})`, display: 'flex', alignItems: 'center', paddingLeft: 10, color: '#fff', fontSize: 12, fontWeight: 600 }}>
-                {v.toLocaleString('pt-PT')}
+                {num(v)}
               </motion.div>
             </div>
           </div>
@@ -125,22 +134,23 @@ function Funnel({ title, sub, stages }: Extract<Block, { t: 'funnel' }>) {
 }
 
 export function Models({ items, title }: { items: Model[]; title?: string }) {
+  const t = useT();
   return (
     <div className="card" style={{ padding: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}><Cpu size={16} /><b style={{ fontSize: 14.5 }}>{title ?? 'Modelos de machine learning'}</b><span className="chip" style={{ marginLeft: 'auto' }}>Snowflake Model Registry</span></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}><Cpu size={16} /><b style={{ fontSize: 14.5 }}>{title ?? t('cmp.models.title')}</b><span className="chip" style={{ marginLeft: 'auto' }}>Snowflake Model Registry</span></div>
       <div className="grid three" style={{ gap: 12 }}>
         {items.map(m => (
           <div key={m.name} style={{ padding: 14, borderRadius: 14, border: '1px solid var(--line)', background: '#FCFBF6' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, alignItems: 'start' }}>
               <div style={{ fontWeight: 650, fontSize: 13.5 }}>{m.name}</div>
-              <span className={`chip ${m.status === 'Produção' ? 'ok' : m.status === 'Piloto' ? 'gold' : 'sf'}`} style={{ fontSize: 10.5 }}>{m.status}</span>
+              <span className={`chip ${m.status === 'Produção' ? 'ok' : m.status === 'Piloto' ? 'gold' : 'sf'}`} style={{ fontSize: 10.5 }}>{modelStatusLabel(m.status)}</span>
             </div>
             <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{m.kind}</div>
             <div style={{ fontSize: 13, marginTop: 8 }}><b>{m.metric}</b></div>
-            <div className="muted" style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.45 }}>Variáveis: {m.features}</div>
+            <div className="muted" style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.45 }}>{t('cmp.models.features')}: {m.features}</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-              <span className={`chip ${m.drift === 'Estável' ? 'ok' : 'warn'}`} style={{ fontSize: 10.5 }}>Drift: {m.drift}</span>
-              <span className="chip" style={{ fontSize: 10.5 }}>Treino {m.trained}</span>
+              <span className={`chip ${m.drift === 'Estável' ? 'ok' : 'warn'}`} style={{ fontSize: 10.5 }}>Drift: {driftLabel(m.drift)}</span>
+              <span className="chip" style={{ fontSize: 10.5 }}>{t('cmp.models.trained', { d: m.trained })}</span>
               {m.value && <span className="chip gold" style={{ fontSize: 10.5 }}>{m.value}</span>}
             </div>
           </div>
@@ -168,7 +178,7 @@ function Heat({ title, sub, rows, cols, values, unit, good = 'high', fmt }: Extr
             {rows.map((r, i) => (
               <tr key={r}>
                 <td style={{ fontWeight: 550, paddingRight: 10, whiteSpace: 'nowrap' }}>{r}</td>
-                {values[i].map((v, j) => <td key={j} title={`${r} · ${cols[j]}: ${v}${unit ?? ''}`} style={{ background: color(v), borderRadius: 7, textAlign: 'center', padding: '8px 4px', fontVariantNumeric: 'tabular-nums', fontWeight: 550 }}>{fmt ? fmt(v) : v.toLocaleString('pt-PT')}</td>)}
+                {values[i].map((v, j) => <td key={j} title={`${r} · ${cols[j]}: ${num(v)}${unit ?? ''}`} style={{ background: color(v), borderRadius: 7, textAlign: 'center', padding: '8px 4px', fontVariantNumeric: 'tabular-nums', fontWeight: 550 }}>{fmt ? fmt(v) : num(v)}</td>)}
               </tr>
             ))}
           </tbody>
@@ -201,15 +211,16 @@ function Flow({ title, sub, nodes }: { title: string; sub?: string; nodes: FlowN
 
 function Scenario({ title, sub, inputs, outputs, note }: { title: string; sub?: string; inputs: ScenarioInput[]; outputs: ScenarioOutput[]; note?: string }) {
   const [v, setV] = useState<Record<string, number>>(Object.fromEntries(inputs.map(i => [i.id, i.value])));
+  const t = useT();
   return (
     <div className="card" style={{ padding: 20, background: 'linear-gradient(160deg,#FFFBEA,#fff 60%)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><SlidersHorizontal size={16} /><b style={{ fontSize: 14.5 }}>{title}</b><span className="chip gold" style={{ marginLeft: 'auto' }}>Simulador · Snowpark</span></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><SlidersHorizontal size={16} /><b style={{ fontSize: 14.5 }}>{title}</b><span className="chip gold" style={{ marginLeft: 'auto' }}>{t('cmp.scenario.chip')}</span></div>
       {sub && <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{sub}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 24, marginTop: 16 }}>
         <div style={{ display: 'grid', gap: 16 }}>
           {inputs.map(i => (
             <div key={i.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{i.label}</span><b>{v[i.id] > 0 && i.min < 0 ? '+' : ''}{v[i.id].toLocaleString('pt-PT')} {i.unit}</b></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{i.label}</span><b>{v[i.id] > 0 && i.min < 0 ? '+' : ''}{num(v[i.id])} {i.unit}</b></div>
               <input type="range" min={i.min} max={i.max} step={i.step} value={v[i.id]} onChange={e => setV(x => ({ ...x, [i.id]: +e.target.value }))} style={{ width: '100%', accentColor: '#121210', marginTop: 6 }} />
             </div>
           ))}
@@ -253,7 +264,7 @@ export default function Blocks({ blocks }: { blocks: Block[] }) {
               <div style={{ padding: '10px 12px 12px', display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}><b style={{ fontSize: 14.5 }}>{b.title}</b>
                 <span style={{ display: 'flex', gap: 12, fontSize: 12 }} className="muted">
                   {b.legend ? b.legend.map(([l, c]) => <span key={l} style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="dot" style={{ background: c }} />{l}</span>)
-                    : (['ok', 'aviso', 'critico'] as const).map(s => <span key={s} style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className={`dot ${s}`} />{b.points.filter(a => a.status === s).length} {s === 'ok' ? 'normal' : s === 'aviso' ? 'atenção' : 'crítico'}</span>)}
+                    : (['ok', 'aviso', 'critico'] as const).map(s => <span key={s} style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className={`dot ${s}`} />{b.points.filter(a => a.status === s).length} {mapStatusLabel(s).toLowerCase()}</span>)}
                 </span>
               </div>
               <MapView points={b.points} routes={b.routes} height={b.height ?? 430} />

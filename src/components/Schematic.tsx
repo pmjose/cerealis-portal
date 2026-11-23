@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import type { Asset } from '../data/c360';
+import { getLang, useT } from '../i18n';
 
 const UNITS: Record<Asset['kind'], string[]> = {
   moinho: ['Silo de trigo', 'Limpeza', 'Condicionamento', 'Moinho de cilindros', 'Plansichter', 'Silo de farinha', 'Ensacagem'],
@@ -7,6 +8,14 @@ const UNITS: Record<Asset['kind'], string[]> = {
   extrusora: ['Mistura', 'Pré-condicionador', 'Extrusora dupla rosca', 'Corte', 'Secador · tostador', 'Revestimento', 'Embalamento'],
   forno: ['Amassadeira', 'Laminador', 'Moldagem rotativa', 'Forno túnel (4 zonas)', 'Arrefecimento', 'Empilhamento', 'Embalamento'],
   silo: ['Receção 200 t/h', 'Células 1–4', 'Células 5–8', 'Células 9–12', 'Transporte para moagem'],
+};
+// Mesmas unidades, mesma ordem: o ícone é escolhido pelo rótulo português; o texto mostrado segue a língua.
+const UNITS_EN: Record<Asset['kind'], string[]> = {
+  moinho: ['Wheat silo', 'Cleaning', 'Conditioning', 'Roller mill', 'Plansifter', 'Flour silo', 'Bagging'],
+  linha: ['Dosing', 'Press', 'Die', 'Spreader · cutting', 'Dryer Z1–Z3', 'Cooling', 'Packing'],
+  extrusora: ['Mixing', 'Preconditioner', 'Twin-screw extruder', 'Cutting', 'Dryer · toaster', 'Coating', 'Packing'],
+  forno: ['Mixer', 'Sheeter', 'Rotary moulder', 'Tunnel oven (4 zones)', 'Cooling', 'Stacking', 'Packing'],
+  silo: ['Intake 200 t/h', 'Cells 1–4', 'Cells 5–8', 'Cells 9–12', 'Conveying to mill'],
 };
 const COL = { ok: '#17924B', aviso: '#E08600', critico: '#D92D20' };
 
@@ -35,14 +44,16 @@ function Glyph({ label, x, y, w, h }: { label: string; x: number; y: number; w: 
 }
 
 export default function Schematic({ a }: { a: Asset }) {
+  const t = useT();
   const units = UNITS[a.kind];
+  const shown = getLang() === 'en' ? UNITS_EN[a.kind] : units;
   const W = 1000, H = 230, pad = 24, gap = 22;
   const w = (W - pad * 2 - gap * (units.length - 1)) / units.length, h = 104, y = 70;
   return (
     <div className="card" style={{ padding: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-        <b style={{ fontSize: 14.5 }}>Esquema do processo · gémeo digital</b>
-        <span className="chip"><span className={`dot ${a.status}`} /> Sensores em tempo real · {a.sensors.length} pontos</span>
+        <b style={{ fontSize: 14.5 }}>{t('cmp.schematic.title')}</b>
+        <span className="chip"><span className={`dot ${a.status}`} /> {t('cmp.schematic.sensors', { n: a.sensors.length })}</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
         <defs><linearGradient id="unitg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFFFFF" /><stop offset="1" stopColor="#F6F3E6" /></linearGradient></defs>
@@ -52,7 +63,7 @@ export default function Schematic({ a }: { a: Asset }) {
             <g key={u}>
               {i < units.length - 1 && <line x1={x + w} y1={y + h / 2} x2={x + w + gap} y2={y + h / 2} stroke="#D99A00" strokeWidth={3} className="flow" />}
               <rect x={x} y={y} width={w} height={h} rx={14} fill="url(#unitg)" stroke="rgba(18,18,16,.18)" />
-              <text x={x + w / 2} y={y + 20} textAnchor="middle" fontSize={11.5} fontWeight={600} fill="#2A2925">{u}</text>
+              <text x={x + w / 2} y={y + 20} textAnchor="middle" fontSize={11.5} fontWeight={600} fill="#2A2925">{shown[i]}</text>
               <Glyph label={u} x={x} y={y + 14} w={w} h={h - 14} />
             </g>
           );
@@ -74,7 +85,7 @@ export default function Schematic({ a }: { a: Asset }) {
         {a.sensors.map((s, j) => (
           <div key={s.label} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 10px', borderRadius: 12, background: s.status === 'ok' ? '#FAF8EF' : s.status === 'aviso' ? '#FFF6E5' : '#FDEEEC', border: '1px solid var(--line)' }}>
             <span style={{ width: 20, height: 20, borderRadius: '50%', background: COL[s.status], color: '#fff', fontSize: 10.5, fontWeight: 700, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{j + 1}</span>
-            <div style={{ minWidth: 0 }}><div className="muted" style={{ fontSize: 11.5 }}>{s.label} · {units[s.unit]}</div><div style={{ fontWeight: 650, fontSize: 13.5 }}>{s.value}</div></div>
+            <div style={{ minWidth: 0 }}><div className="muted" style={{ fontSize: 11.5 }}>{s.label} · {shown[s.unit]}</div><div style={{ fontWeight: 650, fontSize: 13.5 }}>{s.value}</div></div>
           </div>
         ))}
       </div>
